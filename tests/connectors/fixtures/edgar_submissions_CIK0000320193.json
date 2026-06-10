@@ -1,0 +1,98 @@
+{
+  "cik": "320193",
+  "entityType": "operating",
+  "sic": "3571",
+  "sicDescription": "Electronic Computers",
+  "insiderTransactionForOwnerExists": 0,
+  "insiderTransactionForIssuerExists": 1,
+  "name": "Apple Inc.",
+  "tickers": ["AAPL"],
+  "exchanges": ["Nasdaq"],
+  "ein": "942404110",
+  "description": "",
+  "category": "Large accelerated filer",
+  "fiscalYearEnd": "0928",
+  "stateOfIncorporation": "CA",
+  "stateOfIncorporationDescription": "CA",
+  "addresses": {
+    "mailing": {
+      "street1": "ONE APPLE PARK WAY",
+      "street2": null,
+      "city": "CUPERTINO",
+      "stateOrCountry": "CA",
+      "zipCode": "95014",
+      "stateOrCountryDescription": "CA"
+    },
+    "business": {
+      "street1": "ONE APPLE PARK WAY",
+      "street2": null,
+      "city": "CUPERTINO",
+      "stateOrCountry": "CA",
+      "zipCode": "95014",
+      "stateOrCountryDescription": "CA"
+    }
+  },
+  "phone": "(408) 996-1010",
+  "flags": "",
+  "filings": {
+    "recent": {
+      "accessionNumber": [
+        "0000320193-24-000069",
+        "0000320193-24-000067",
+        "0000320193-24-000050",
+        "0000320193-23-000106",
+        "0001308179-24-000010",
+        "0000320193-23-000077"
+      ],
+      "filingDate": [
+        "2024-05-03",
+        "2024-05-02",
+        "2024-04-15",
+        "2023-11-03",
+        "2024-01-11",
+        "2023-08-04"
+      ],
+      "reportDate": [
+        "2024-03-30",
+        "2024-05-02",
+        "2024-04-11",
+        "2023-09-30",
+        "2024-02-28",
+        "2023-07-01"
+      ],
+      "acceptanceDateTime": [
+        "2024-05-02T18:04:25.000Z",
+        "2024-05-02T16:30:40.000Z",
+        "2024-04-15T18:31:02.000Z",
+        "2023-11-02T18:08:27.000Z",
+        "2024-01-11T16:31:22.000Z",
+        "2023-08-03T18:04:43.000Z"
+      ],
+      "act": ["34", "34", "", "34", "34", "34"],
+      "form": ["10-Q", "8-K", "4", "10-K", "DEF 14A", "10-Q"],
+      "fileNumber": ["001-36743", "001-36743", "", "001-36743", "001-36743", "001-36743"],
+      "filmNumber": ["24910791", "24908810", "", "231373899", "24528012", "231141512"],
+      "items": ["", "2.02,9.01", "", "", "", ""],
+      "size": [8298405, 489854, 4628, 12695911, 8123451, 7894123],
+      "isXBRL": [1, 1, 0, 1, 0, 1],
+      "isInlineXBRL": [1, 1, 0, 1, 0, 1],
+      "primaryDocument": [
+        "aapl-20240330.htm",
+        "aapl-20240502.htm",
+        "xslF345X05/wk-form4_1713218062.xml",
+        "aapl-20230930.htm",
+        "aapl-20240228.htm",
+        "aapl-20230701.htm"
+      ],
+      "primaryDocDescription": [
+        "10-Q",
+        "8-K",
+        "FORM 4",
+        "10-K",
+        "DEF 14A",
+        "10-Q"
+      ]
+    },
+    "files": []
+  }
+}

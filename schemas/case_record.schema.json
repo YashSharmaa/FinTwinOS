@@ -1,0 +1,94 @@
+{
+  "$defs": {
+    "CaseStatus": {
+      "enum": [
+        "open",
+        "in_review",
+        "awaiting_human",
+        "closed",
+        "escalated"
+      ],
+      "title": "CaseStatus",
+      "type": "string"
+    },
+    "EntityRef": {
+      "description": "A typed pointer to a canonical entity in the twin.",
+      "properties": {
+        "entity_type": {
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "entity_id": {
+          "title": "Entity Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_type",
+        "entity_id"
+      ],
+      "title": "EntityRef",
+      "type": "object"
+    },
+    "RiskTier": {
+      "description": "Risk tier attached to every tool and decision; drives approval policy.",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "RiskTier",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "kind": {
+      "title": "Kind",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/CaseStatus",
+      "default": "open"
+    },
+    "priority": {
+      "$ref": "#/$defs/RiskTier",
+      "default": "medium"
+    },
+    "opened_at": {
+      "format": "date-time",
+      "title": "Opened At",
+      "type": "string"
+    },
+    "entities": {
+      "items": {
+        "$ref": "#/$defs/EntityRef"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "narrative": {
+      "default": "",
+      "title": "Narrative",
+      "type": "string"
+    },
+    "history": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "History",
+      "type": "array"
+    }
+  },
+  "required": [
+    "case_id",
+    "kind"
+  ],
+  "title": "CaseRecord",
+  "type": "object"
+}

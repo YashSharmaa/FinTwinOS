@@ -1,0 +1,53 @@
+{
+  "properties": {
+    "trade_id": {
+      "title": "Trade Id",
+      "type": "string"
+    },
+    "account_id": {
+      "title": "Account Id",
+      "type": "string"
+    },
+    "instrument_id": {
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "side": {
+      "title": "Side",
+      "type": "string"
+    },
+    "quantity": {
+      "title": "Quantity",
+      "type": "number"
+    },
+    "price": {
+      "title": "Price",
+      "type": "number"
+    },
+    "executed_at": {
+      "format": "date-time",
+      "title": "Executed At",
+      "type": "string"
+    },
+    "venue": {
+      "default": "XOFF",
+      "title": "Venue",
+      "type": "string"
+    },
+    "attributes": {
+      "additionalProperties": true,
+      "title": "Attributes",
+      "type": "object"
+    }
+  },
+  "required": [
+    "trade_id",
+    "account_id",
+    "instrument_id",
+    "side",
+    "quantity",
+    "price"
+  ],
+  "title": "Trade",
+  "type": "object"
+}

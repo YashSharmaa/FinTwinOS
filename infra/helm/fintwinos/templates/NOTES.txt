@@ -1,0 +1,48 @@
+FinTwinOS tools server deployed.
+
+Release:   {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Image:     {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+Offline:   FINTWIN_OFFLINE={{ index .Values.env "FINTWIN_OFFLINE" | default "1" }}
+
+1. Reach the tool catalog from your workstation:
+
+   kubectl --namespace {{ .Release.Namespace }} port-forward \
+     svc/{{ include "fintwinos.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+
+   then check health and list the typed tools:
+
+   curl http://127.0.0.1:{{ .Values.service.port }}/healthz
+   curl http://127.0.0.1:{{ .Values.service.port }}/tools
+
+{{- if .Values.openaiSecret.enabled }}
+
+2. Live LLM mode is wired to Secret "{{ .Values.openaiSecret.name }}"
+   (key "{{ .Values.openaiSecret.key }}"). Make sure it exists:
+
+   kubectl --namespace {{ .Release.Namespace }} get secret {{ .Values.openaiSecret.name }}
+
+   and that env.FINTWIN_OFFLINE is "0", or calls will still use offline stubs.
+{{- else }}
+
+2. The release is running OFFLINE: deterministic LLM stubs, zero secrets, no
+   network egress. To enable live OpenAI calls:
+
+   kubectl --namespace {{ .Release.Namespace }} create secret generic {{ .Values.openaiSecret.name }} \
+     --from-literal={{ .Values.openaiSecret.key }}=sk-...
+
+   helm upgrade {{ .Release.Name }} . \
+     --set openaiSecret.enabled=true --set env.FINTWIN_OFFLINE="0"
+{{- end }}
+
+3. Governance reminders:
+
+   - The execute tool band stays OFF unless FINTWIN_EXECUTE_TOOLS_ENABLED=1 —
+     and even then every execute call needs a policy allow-rule plus a valid
+     human ApprovalToken. Execute handlers only ever write to the local outbox
+     under /data, never to a real external system.
+   - The hash-chained audit trail and outbox live on the /data volume; enable
+     persistence.existingClaim to keep them across pod restarts.
+
+FinTwinOS is MIT-licensed, created by Yash Sharma
+(https://www.linkedin.com/in/yashsharmaa/).

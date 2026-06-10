@@ -1,0 +1,27 @@
+# FinTwinOS baseline policy pack.
+#
+# Mirrors fintwinos.policy.gates.default_rules() so deployments that switch to
+# YAML-managed policy keep exactly the shipped conservative defaults: the
+# execute band stays default-deny (the gate enforces that structurally), every
+# execute call is flagged for human review, and high-risk proposals need eyes.
+name: baseline
+version: "1.0"
+description: >
+  Conservative defaults mirroring the built-in rules: deny critical-tier
+  irreversible actions, flag high-risk proposals and every execute call for
+  human review.
+rules:
+  - name: deny-irreversible-critical
+    description: No critical-tier irreversible action may run via policy alone.
+    effect: deny
+    bands: [execute]
+    min_risk_tier: critical
+  - name: review-high-risk-proposals
+    description: High and critical risk proposals are flagged for human review.
+    effect: require_approval
+    bands: [propose]
+    min_risk_tier: high
+  - name: review-all-execute
+    description: Every execute call requires human review on top of approval tokens.
+    effect: require_approval
+    bands: [execute]

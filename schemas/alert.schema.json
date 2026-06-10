@@ -1,0 +1,90 @@
+{
+  "$defs": {
+    "AlertStatus": {
+      "enum": [
+        "new",
+        "triaged",
+        "investigating",
+        "dismissed",
+        "confirmed"
+      ],
+      "title": "AlertStatus",
+      "type": "string"
+    },
+    "EntityRef": {
+      "description": "A typed pointer to a canonical entity in the twin.",
+      "properties": {
+        "entity_type": {
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "entity_id": {
+          "title": "Entity Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_type",
+        "entity_id"
+      ],
+      "title": "EntityRef",
+      "type": "object"
+    },
+    "RiskTier": {
+      "description": "Risk tier attached to every tool and decision; drives approval policy.",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "RiskTier",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "alert_id": {
+      "title": "Alert Id",
+      "type": "string"
+    },
+    "kind": {
+      "title": "Kind",
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/$defs/RiskTier",
+      "default": "medium"
+    },
+    "score": {
+      "default": 0.0,
+      "title": "Score",
+      "type": "number"
+    },
+    "status": {
+      "$ref": "#/$defs/AlertStatus",
+      "default": "new"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "entities": {
+      "items": {
+        "$ref": "#/$defs/EntityRef"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    }
+  },
+  "required": [
+    "kind"
+  ],
+  "title": "Alert",
+  "type": "object"
+}

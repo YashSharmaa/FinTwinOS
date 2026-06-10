@@ -1,0 +1,55 @@
+# FinTwinOS — docker-compose deployment of the typed tools server.
+#
+# Runs with ZERO secrets out of the box: FINTWIN_OFFLINE defaults to 1, so every
+# LLM call is a deterministic stub and the whole stack works without an OpenAI
+# key or any network egress.
+#
+# To go live, copy .env.example to .env at the repo root, set OPENAI_API_KEY,
+# and start with FINTWIN_OFFLINE=0:
+#
+#   cd infra
+#   docker compose up --build                  # offline, no secrets needed
+#   FINTWIN_OFFLINE=0 docker compose up -d     # live LLM calls via .env key
+#
+# The named volume keeps the twin's local state (.fintwinos data dir: audit
+# chains, execute-band outbox, eval reports) across container restarts.
+
+name: fintwinos
+
+services:
+  tools-server:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    image: fintwinos/tools-server:0.1.0
+    container_name: fintwinos-tools-server
+    # .env is optional: the stack is fully functional offline without it.
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      # Offline-first default; override at launch with FINTWIN_OFFLINE=0.
+      FINTWIN_OFFLINE: "${FINTWIN_OFFLINE:-1}"
+      # Governance defaults stay conservative in containers.
+      FINTWIN_EXECUTE_TOOLS_ENABLED: "${FINTWIN_EXECUTE_TOOLS_ENABLED:-0}"
+      FINTWIN_SHADOW_MODE: "${FINTWIN_SHADOW_MODE:-1}"
+      FINTWIN_ENVIRONMENT: "${FINTWIN_ENVIRONMENT:-shadow}"
+      FINTWIN_DATA_DIR: /data
+    ports:
+      - "${FINTWIN_PORT:-8341}:8341"
+    volumes:
+      - fintwinos-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import httpx; httpx.get('http://127.0.0.1:8341/healthz', timeout=4.0).raise_for_status()"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  fintwinos-data:

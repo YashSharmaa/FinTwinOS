@@ -1,0 +1,41 @@
+# FinTwinOS compliance policy pack.
+#
+# Governs automated case closure. The detection model's recall on the current
+# evaluation window must clear the 0.92 recall floor before any closure is
+# even considered: closing cases with a weak detector silently buries true
+# positives. High and critical priority cases can never be auto-dismissed at
+# all, and every closure still routes through a human approval.
+name: compliance
+version: "1.0"
+description: >
+  Case-closure governance: automated closure is denied whenever detection
+  recall is below the 0.92 floor, high/critical-priority cases may never be
+  auto-dismissed, and every closure requires human review.
+rules:
+  - name: compliance-deny-closure-below-recall-floor
+    description: >
+      Automated case closure is denied while the detection model's recall is
+      below the 0.92 floor; a weak detector must not clear its own backlog.
+    effect: deny
+    tools: ["execute_close_case", "propose_close_case"]
+    conditions:
+      model_recall: {lt: 0.92}
+  - name: compliance-deny-dismiss-high-priority
+    description: High and critical priority cases may never be dismissed automatically.
+    effect: deny
+    tools: ["execute_close_case"]
+    conditions:
+      disposition: {eq: dismiss}
+      priority: {in: [high, critical]}
+  - name: compliance-allow-closure-above-recall-floor
+    description: >
+      Allow case closure when detection recall meets or exceeds the 0.92
+      floor, subject to human approval.
+    effect: allow
+    tools: ["execute_close_case"]
+    conditions:
+      model_recall: {gte: 0.92}
+  - name: compliance-review-all-closures
+    description: Every case closure, proposed or executed, requires human review.
+    effect: require_approval
+    tools: ["execute_close_case", "propose_close_case"]

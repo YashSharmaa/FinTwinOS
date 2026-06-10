@@ -1,0 +1,99 @@
+# Default values for the FinTwinOS tools-server chart.
+#
+# Offline-first: with these defaults the deployment needs NO secrets and makes
+# NO outbound network calls — every LLM call returns a deterministic stub and
+# agents use their rule-based fallbacks. To enable live OpenAI calls, set
+# env.FINTWIN_OFFLINE to "0" and point openaiSecret at a Secret that holds
+# your OPENAI_API_KEY.
+
+replicaCount: 1
+
+image:
+  repository: fintwinos/tools-server
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Container port the tools server listens on (also used by the probes).
+containerPort: 8341
+
+service:
+  type: ClusterIP
+  port: 8341
+
+# Plain (non-secret) environment, rendered into a ConfigMap and injected via
+# envFrom. Every FINTWIN_* setting from fintwinos.core.config can go here.
+env:
+  FINTWIN_OFFLINE: "1"
+  FINTWIN_ENVIRONMENT: "shadow"
+  FINTWIN_EXECUTE_TOOLS_ENABLED: "0"
+  FINTWIN_DUAL_CONTROL_REQUIRED: "1"
+  FINTWIN_SHADOW_MODE: "1"
+  FINTWIN_SEED: "7"
+  FINTWIN_DATA_DIR: "/data"
+
+# Reference to an existing Secret carrying the OpenAI key. The chart never
+# creates secrets itself — provision them with your secret manager, e.g.:
+#   kubectl create secret generic fintwinos-openai \
+#     --from-literal=OPENAI_API_KEY=sk-...
+# Only consulted when enabled; the offline default needs no key at all.
+openaiSecret:
+  enabled: false
+  name: fintwinos-openai
+  key: OPENAI_API_KEY
+
+# Local twin state (/data): audit chains, execute-band outbox, eval reports.
+# emptyDir by default; point existingClaim at a PVC to persist across restarts.
+persistence:
+  enabled: false
+  existingClaim: ""
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+podAnnotations: {}
+podLabels: {}
+
+# UID/GID 10001 matches the non-root `fintwin` user baked into the image.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

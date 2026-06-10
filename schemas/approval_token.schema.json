@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "ApprovalStatus": {
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "escalated"
+      ],
+      "title": "ApprovalStatus",
+      "type": "string"
+    }
+  },
+  "description": "A human (or dual-control pair) granting permission for a specific action.",
+  "properties": {
+    "token_id": {
+      "title": "Token Id",
+      "type": "string"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    },
+    "granted_by": {
+      "title": "Granted By",
+      "type": "string"
+    },
+    "role": {
+      "default": "approver",
+      "title": "Role",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/ApprovalStatus",
+      "default": "approved"
+    },
+    "granted_at": {
+      "format": "date-time",
+      "title": "Granted At",
+      "type": "string"
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expires At"
+    },
+    "scope": {
+      "additionalProperties": true,
+      "title": "Scope",
+      "type": "object"
+    }
+  },
+  "required": [
+    "subject",
+    "granted_by"
+  ],
+  "title": "ApprovalToken",
+  "type": "object"
+}

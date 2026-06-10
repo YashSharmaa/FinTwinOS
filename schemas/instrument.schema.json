@@ -1,0 +1,33 @@
+{
+  "properties": {
+    "instrument_id": {
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "symbol": {
+      "title": "Symbol",
+      "type": "string"
+    },
+    "asset_class": {
+      "default": "equity",
+      "title": "Asset Class",
+      "type": "string"
+    },
+    "currency": {
+      "default": "USD",
+      "title": "Currency",
+      "type": "string"
+    },
+    "attributes": {
+      "additionalProperties": true,
+      "title": "Attributes",
+      "type": "object"
+    }
+  },
+  "required": [
+    "instrument_id",
+    "symbol"
+  ],
+  "title": "Instrument",
+  "type": "object"
+}

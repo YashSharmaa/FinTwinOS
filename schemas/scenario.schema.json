@@ -1,0 +1,37 @@
+{
+  "properties": {
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "kind": {
+      "default": "stress",
+      "title": "Kind",
+      "type": "string"
+    },
+    "params": {
+      "additionalProperties": true,
+      "title": "Params",
+      "type": "object"
+    },
+    "narrative": {
+      "default": "",
+      "title": "Narrative",
+      "type": "string"
+    },
+    "assumptions_version": {
+      "default": "v1",
+      "title": "Assumptions Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "title": "Scenario",
+  "type": "object"
+}

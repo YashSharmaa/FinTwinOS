@@ -1,0 +1,34 @@
+# FinTwinOS treasury policy pack.
+#
+# Governs cash movement through execute_post_transfer. Transfers at or below
+# the desk limit in an approved settlement currency are explicitly allowed —
+# but still require a human approval token, because the allow rule is paired
+# with a require_approval rule and the registry hard-gates the execute band.
+# Anything above the limit is denied outright: route it through manual
+# treasury operations, not the agent plane.
+name: treasury
+version: "1.0"
+description: >
+  Treasury transfer limits: transfers at or below 250000 in approved
+  settlement currencies are allowed with human approval; larger transfers
+  are denied outright.
+rules:
+  - name: treasury-deny-large-transfers
+    description: Transfers above 250000 are denied; use manual treasury operations.
+    effect: deny
+    tools: ["execute_post_transfer"]
+    conditions:
+      amount: {gt: 250000}
+  - name: treasury-allow-small-transfers
+    description: >
+      Allow posting transfers at or below the 250000 desk limit in approved
+      settlement currencies, subject to human approval.
+    effect: allow
+    tools: ["execute_post_transfer"]
+    conditions:
+      amount: {lte: 250000}
+      currency: {in: [USD, EUR, GBP]}
+  - name: treasury-review-all-transfers
+    description: Every transfer posting requires human review and an approval token.
+    effect: require_approval
+    tools: ["execute_post_transfer"]

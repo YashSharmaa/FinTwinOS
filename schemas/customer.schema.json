@@ -1,0 +1,50 @@
+{
+  "$defs": {
+    "RiskTier": {
+      "description": "Risk tier attached to every tool and decision; drives approval policy.",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "RiskTier",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "customer_id": {
+      "title": "Customer Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "segment": {
+      "default": "retail",
+      "title": "Segment",
+      "type": "string"
+    },
+    "risk_rating": {
+      "$ref": "#/$defs/RiskTier",
+      "default": "low"
+    },
+    "country": {
+      "default": "GB",
+      "title": "Country",
+      "type": "string"
+    },
+    "attributes": {
+      "additionalProperties": true,
+      "title": "Attributes",
+      "type": "object"
+    }
+  },
+  "required": [
+    "customer_id",
+    "name"
+  ],
+  "title": "Customer",
+  "type": "object"
+}

@@ -1,0 +1,33 @@
+{
+  "properties": {
+    "account_id": {
+      "title": "Account Id",
+      "type": "string"
+    },
+    "instrument_id": {
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "quantity": {
+      "title": "Quantity",
+      "type": "number"
+    },
+    "market_value": {
+      "title": "Market Value",
+      "type": "number"
+    },
+    "as_of": {
+      "format": "date-time",
+      "title": "As Of",
+      "type": "string"
+    }
+  },
+  "required": [
+    "account_id",
+    "instrument_id",
+    "quantity",
+    "market_value"
+  ],
+  "title": "Position",
+  "type": "object"
+}

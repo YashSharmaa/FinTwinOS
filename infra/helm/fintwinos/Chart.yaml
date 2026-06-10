@@ -1,0 +1,24 @@
+apiVersion: v2
+name: fintwinos
+description: >-
+  FinTwinOS — an auditable digital-twin operating system for financial
+  organisations. Deploys the typed tools server (observe / simulate / propose /
+  execute bands behind policy and approval gates). Offline-first: the default
+  values run with no secrets and no network egress.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.25.0-0"
+keywords:
+  - digital-twin
+  - finance
+  - llm
+  - agents
+  - governance
+  - risk
+  - compliance
+maintainers:
+  - name: Yash Sharma
+    url: https://www.linkedin.com/in/yashsharmaa/
+annotations:
+  fintwinos.io/licence: MIT

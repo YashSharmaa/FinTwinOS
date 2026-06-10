@@ -1,0 +1,44 @@
+# FinTwinOS trading-limits policy pack.
+#
+# Governs order placement and cancellation. Orders are bounded by notional:
+# at or below 1,000,000 they are allowed with human approval, above that they
+# are denied outright. Instruments flagged restricted by the order router can
+# never be traded through the agent plane. Cancellations are risk-reducing
+# and therefore always allowed (with approval).
+name: trading_limits
+version: "1.0"
+description: >
+  Trading limits: orders at or below 1,000,000 notional are allowed with
+  human approval, oversize orders and restricted instruments are denied,
+  and risk-reducing cancellations are allowed with approval.
+rules:
+  - name: trading-deny-oversize-notional
+    description: Orders above 1,000,000 notional are denied outright.
+    effect: deny
+    tools: ["execute_place_order"]
+    conditions:
+      notional: {gt: 1000000}
+  - name: trading-deny-restricted-instruments
+    description: >
+      Instruments flagged restricted (sanctions, watchlist, trading halt)
+      may never be ordered through the agent plane.
+    effect: deny
+    tools: ["execute_place_order"]
+    conditions:
+      instrument_restricted: {eq: true}
+  - name: trading-allow-bounded-orders
+    description: >
+      Allow order placement at or below 1,000,000 notional, subject to human
+      approval.
+    effect: allow
+    tools: ["execute_place_order"]
+    conditions:
+      notional: {lte: 1000000}
+  - name: trading-allow-cancellations
+    description: Cancelling an order is risk-reducing and allowed with approval.
+    effect: allow
+    tools: ["execute_cancel_order"]
+  - name: trading-review-all-order-actions
+    description: Every order placement or cancellation requires human review.
+    effect: require_approval
+    tools: ["execute_place_order", "execute_cancel_order"]

@@ -1,0 +1,26 @@
+{"id": "fc-001", "request": "What is the current balance on account ACC-00412?", "expected_tool": "observe_account_balance", "expected_arguments": {"account_id": "ACC-00412"}}
+{"id": "fc-002", "request": "Show me the open positions for account ACC-00077.", "expected_tool": "observe_positions", "expected_arguments": {"account_id": "ACC-00077"}}
+{"id": "fc-003", "request": "Pull the customer profile for CUS-0091, including segment and risk rating.", "expected_tool": "observe_customer_profile", "expected_arguments": {"customer_id": "CUS-0091"}}
+{"id": "fc-004", "request": "Open the case file for CASE-2031 so I can review the narrative.", "expected_tool": "observe_case_file", "expected_arguments": {"case_id": "CASE-2031"}}
+{"id": "fc-005", "request": "Read the series eq.spx.close for the last 60 days.", "expected_tool": "observe_market_series", "expected_arguments": {"series_key": "eq.spx.close", "window_days": 60}}
+{"id": "fc-006", "request": "List all new alerts with high severity in the alert queue.", "expected_tool": "observe_alert_queue", "expected_arguments": {"status": "new", "severity": "high"}}
+{"id": "fc-007", "request": "Show the funding ladder out to a 90 day horizon.", "expected_tool": "observe_liquidity_ladder", "expected_arguments": {"horizon_days": 90}}
+{"id": "fc-008", "request": "Run a market stress for rates with a 200 bps shock over a 10 day horizon.", "expected_tool": "simulate_market_stress", "expected_arguments": {"asset_class": "rates", "shock_bps": 200, "horizon_days": 10}}
+{"id": "fc-009", "request": "Run a liquidity runoff simulation with a 15 percent runoff over 60 days.", "expected_tool": "simulate_liquidity_runoff", "expected_arguments": {"runoff_pct": 15, "horizon_days": 60}}
+{"id": "fc-010", "request": "Generate 500 synthetic transactions for the structuring typology and score detection.", "expected_tool": "simulate_aml_typology", "expected_arguments": {"typology": "structuring", "n_transactions": 500}}
+{"id": "fc-011", "request": "Simulate the ops backlog with 12 staff over the next 30 days.", "expected_tool": "simulate_ops_backlog", "expected_arguments": {"staff_count": 12, "horizon_days": 30}}
+{"id": "fc-012", "request": "Draft a recommendation to escalate CASE-1188.", "expected_tool": "propose_case_action", "expected_arguments": {"case_id": "CASE-1188", "action": "escalate"}}
+{"id": "fc-013", "request": "Propose closing case CASE-7421.", "expected_tool": "propose_case_action", "expected_arguments": {"case_id": "CASE-7421", "action": "close"}}
+{"id": "fc-014", "request": "Draft a limit change for LIM-FX-01 to a new limit of 2500000.", "expected_tool": "propose_limit_change", "expected_arguments": {"limit_id": "LIM-FX-01", "new_limit": 2500000}}
+{"id": "fc-015", "request": "Propose a short hedge on INS-SPY with a notional of 1500000.", "expected_tool": "propose_hedge", "expected_arguments": {"instrument_id": "INS-SPY", "notional": 1500000, "direction": "short"}}
+{"id": "fc-016", "request": "Send the complaint acknowledgement letter to customer CUS-0455.", "expected_tool": "execute_send_customer_letter", "expected_arguments": {"customer_id": "CUS-0455", "template": "complaint_ack"}}
+{"id": "fc-017", "request": "Apply the approved trading limit update for LIM-EQ-02 with a new limit of 750000.", "expected_tool": "execute_update_trading_limit", "expected_arguments": {"limit_id": "LIM-EQ-02", "new_limit": 750000}}
+{"id": "fc-018", "request": "Has CUS-3120's risk rating changed? Fetch their customer profile.", "expected_tool": "observe_customer_profile", "expected_arguments": {"customer_id": "CUS-3120"}}
+{"id": "fc-019", "request": "Read the series ops.complaints.daily for the last 30 days.", "expected_tool": "observe_market_series", "expected_arguments": {"series_key": "ops.complaints.daily", "window_days": 30}}
+{"id": "fc-020", "request": "Run a market stress for equity with a 350 bps shock over 5 days.", "expected_tool": "simulate_market_stress", "expected_arguments": {"asset_class": "equity", "shock_bps": 350, "horizon_days": 5}}
+{"id": "fc-021", "request": "Show alerts that are investigating with critical severity.", "expected_tool": "observe_alert_queue", "expected_arguments": {"status": "investigating", "severity": "critical"}}
+{"id": "fc-022", "request": "Propose a long hedge of 2000000 notional on INS-TLT.", "expected_tool": "propose_hedge", "expected_arguments": {"instrument_id": "INS-TLT", "notional": 2000000, "direction": "long"}}
+{"id": "fc-023", "request": "Send the KYC refresh letter to customer CUS-8810.", "expected_tool": "execute_send_customer_letter", "expected_arguments": {"customer_id": "CUS-8810", "template": "kyc_refresh"}}
+{"id": "fc-024", "request": "Simulate a mule network typology with 250 transactions.", "expected_tool": "simulate_aml_typology", "expected_arguments": {"typology": "mule_network", "n_transactions": 250}}
+{"id": "fc-025", "request": "Check the liquidity ladder for the next 45 days.", "expected_tool": "observe_liquidity_ladder", "expected_arguments": {"horizon_days": 45}}
+{"id": "fc-026", "request": "Draft a request for information on CASE-5512.", "expected_tool": "propose_case_action", "expected_arguments": {"case_id": "CASE-5512", "action": "request_information"}}

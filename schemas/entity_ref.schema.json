@@ -1,0 +1,19 @@
+{
+  "description": "A typed pointer to a canonical entity in the twin.",
+  "properties": {
+    "entity_type": {
+      "title": "Entity Type",
+      "type": "string"
+    },
+    "entity_id": {
+      "title": "Entity Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id"
+  ],
+  "title": "EntityRef",
+  "type": "object"
+}

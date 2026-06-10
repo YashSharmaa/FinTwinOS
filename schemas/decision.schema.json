@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "RiskTier": {
+      "description": "Risk tier attached to every tool and decision; drives approval policy.",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "RiskTier",
+      "type": "string"
+    }
+  },
+  "description": "The unit that flows from the planner through the policy gate.",
+  "properties": {
+    "decision_id": {
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "objective": {
+      "title": "Objective",
+      "type": "string"
+    },
+    "action_type": {
+      "default": "propose_only",
+      "title": "Action Type",
+      "type": "string"
+    },
+    "planned_tool_calls": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Planned Tool Calls",
+      "type": "array"
+    },
+    "rationale": {
+      "default": "",
+      "title": "Rationale",
+      "type": "string"
+    },
+    "risk_tier": {
+      "$ref": "#/$defs/RiskTier",
+      "default": "medium"
+    },
+    "owner": {
+      "default": "planner",
+      "title": "Owner",
+      "type": "string"
+    },
+    "ticket_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ticket Id"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "objective"
+  ],
+  "title": "Decision",
+  "type": "object"
+}

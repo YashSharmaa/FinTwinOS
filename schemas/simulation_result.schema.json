@@ -1,0 +1,80 @@
+{
+  "description": "Every simulator returns this shape: point estimates AND uncertainty.",
+  "properties": {
+    "simulator": {
+      "title": "Simulator",
+      "type": "string"
+    },
+    "scenario_name": {
+      "title": "Scenario Name",
+      "type": "string"
+    },
+    "ok": {
+      "default": true,
+      "title": "Ok",
+      "type": "boolean"
+    },
+    "metrics": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Metrics",
+      "type": "object"
+    },
+    "series": {
+      "additionalProperties": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "title": "Series",
+      "type": "object"
+    },
+    "confidence": {
+      "additionalProperties": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "title": "Confidence",
+      "type": "object"
+    },
+    "calibration": {
+      "additionalProperties": true,
+      "title": "Calibration",
+      "type": "object"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "assumptions_version": {
+      "default": "v1",
+      "title": "Assumptions Version",
+      "type": "string"
+    },
+    "seed": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Seed"
+    }
+  },
+  "required": [
+    "simulator",
+    "scenario_name"
+  ],
+  "title": "SimulationResult",
+  "type": "object"
+}

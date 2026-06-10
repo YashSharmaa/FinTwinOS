@@ -1,0 +1,51 @@
+{
+  "properties": {
+    "account_id": {
+      "title": "Account Id",
+      "type": "string"
+    },
+    "customer_id": {
+      "title": "Customer Id",
+      "type": "string"
+    },
+    "currency": {
+      "default": "USD",
+      "title": "Currency",
+      "type": "string"
+    },
+    "account_type": {
+      "default": "deposit",
+      "title": "Account Type",
+      "type": "string"
+    },
+    "balance": {
+      "default": 0.0,
+      "title": "Balance",
+      "type": "number"
+    },
+    "opened_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Opened At"
+    },
+    "attributes": {
+      "additionalProperties": true,
+      "title": "Attributes",
+      "type": "object"
+    }
+  },
+  "required": [
+    "account_id",
+    "customer_id"
+  ],
+  "title": "Account",
+  "type": "object"
+}

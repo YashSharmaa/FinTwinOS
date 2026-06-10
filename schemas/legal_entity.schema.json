@@ -1,0 +1,52 @@
+{
+  "properties": {
+    "legal_entity_id": {
+      "title": "Legal Entity Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "jurisdiction": {
+      "default": "GB",
+      "title": "Jurisdiction",
+      "type": "string"
+    },
+    "lei": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lei"
+    },
+    "parent_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Id"
+    },
+    "attributes": {
+      "additionalProperties": true,
+      "title": "Attributes",
+      "type": "object"
+    }
+  },
+  "required": [
+    "legal_entity_id",
+    "name"
+  ],
+  "title": "LegalEntity",
+  "type": "object"
+}
