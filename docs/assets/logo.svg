@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="FinTwinOS logo">
+  <!-- FinTwinOS logo — the institution (solid line) and its digital twin (mirrored, translucent)
+       separated by the simulation boundary. © 2026 Yash Sharma, MIT License. -->
+  <defs>
+    <linearGradient id="ftBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="55%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="28" y="28" width="456" height="456" rx="104" fill="url(#ftBg)"/>
+  <rect x="48" y="48" width="416" height="416" rx="88" fill="none" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="4"/>
+
+  <!-- simulation boundary -->
+  <line x1="104" y1="256" x2="408" y2="256" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 30"/>
+
+  <!-- the real book -->
+  <polyline points="116,206 188,140 252,178 318,112 396,156" fill="none" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#FFFFFF">
+    <circle cx="116" cy="206" r="14"/>
+    <circle cx="188" cy="140" r="14"/>
+    <circle cx="252" cy="178" r="14"/>
+    <circle cx="318" cy="112" r="14"/>
+    <circle cx="396" cy="156" r="14"/>
+  </g>
+
+  <!-- the twin (mirror image) -->
+  <polyline points="116,306 188,372 252,334 318,400 396,356" fill="none" stroke="#FFFFFF" stroke-opacity="0.42" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#FFFFFF" fill-opacity="0.42">
+    <circle cx="116" cy="306" r="14"/>
+    <circle cx="188" cy="372" r="14"/>
+    <circle cx="252" cy="334" r="14"/>
+    <circle cx="318" cy="400" r="14"/>
+    <circle cx="396" cy="356" r="14"/>
+  </g>
+</svg>

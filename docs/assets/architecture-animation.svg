@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="500" viewBox="0 0 940 500" role="img" aria-label="Animated FinTwinOS architecture: sources flow into the digital twin, agent swarms rehearse on simulators, proposals pass a default-deny policy gate, everything lands on a hash-chained audit trail">
+  <!-- FinTwinOS architecture animation (light theme). © 2026 Yash Sharma, MIT License. -->
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#FB923C"/>
+    </marker>
+  </defs>
+
+  <g font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+
+    <rect x="1" y="1" width="938" height="498" rx="18" fill="#FFFFFF" stroke="#FED7AA" stroke-width="2"/>
+    <text x="470" y="40" text-anchor="middle" font-size="17" font-weight="600" fill="#9A3412">FinTwinOS — rehearse decisions on the twin before anything touches production</text>
+
+    <!-- ===================== Sources ===================== -->
+    <rect x="30" y="80" width="150" height="230" rx="12" fill="#FFF7ED" stroke="#FB923C" stroke-width="1.5"/>
+    <text x="105" y="104" text-anchor="middle" font-size="13.5" font-weight="600" fill="#9A3412">Sources</text>
+    <g fill="#FFFFFF" stroke="#FDBA74">
+      <rect x="45" y="118" width="120" height="28" rx="6"/>
+      <rect x="45" y="154" width="120" height="28" rx="6"/>
+      <rect x="45" y="190" width="120" height="28" rx="6"/>
+      <rect x="45" y="226" width="120" height="28" rx="6"/>
+    </g>
+    <g text-anchor="middle" font-size="11" fill="#7C2D12">
+      <text x="105" y="136">Payments</text>
+      <text x="105" y="172">OMS / EMS</text>
+      <text x="105" y="208">KYC / CRM</text>
+      <text x="105" y="244">Market &amp; filings</text>
+    </g>
+
+    <!-- ===================== Digital twin ===================== -->
+    <rect x="240" y="80" width="190" height="230" rx="12" fill="#FFF7ED" stroke="#FB923C" stroke-width="1.5"/>
+    <text x="335" y="104" text-anchor="middle" font-size="13.5" font-weight="600" fill="#9A3412">Digital twin</text>
+    <g fill="#FFFFFF" stroke="#FDBA74">
+      <rect x="255" y="118" width="160" height="28" rx="6"/>
+      <rect x="255" y="154" width="160" height="28" rx="6"/>
+      <rect x="255" y="190" width="160" height="28" rx="6"/>
+      <rect x="255" y="226" width="160" height="28" rx="6"/>
+    </g>
+    <g text-anchor="middle" font-size="11" fill="#7C2D12">
+      <text x="335" y="136">Graph store</text>
+      <text x="335" y="172">Time-series store</text>
+      <text x="335" y="208">Document index</text>
+      <text x="335" y="244">Replay episodes</text>
+    </g>
+    <text x="335" y="296" text-anchor="middle" font-size="10" fill="#A8A29E">entity resolution · snapshots</text>
+
+    <!-- ===================== Agent swarm ===================== -->
+    <rect x="490" y="80" width="190" height="170" rx="12" fill="#FFF7ED" stroke="#FB923C" stroke-width="1.5"/>
+    <text x="585" y="104" text-anchor="middle" font-size="13.5" font-weight="600" fill="#9A3412">Agent swarm</text>
+    <g fill="#FFFFFF" stroke="#FDBA74">
+      <rect x="505" y="116" width="160" height="26" rx="6"/>
+      <rect x="505" y="148" width="160" height="26" rx="6"/>
+      <rect x="505" y="180" width="160" height="26" rx="6"/>
+    </g>
+    <g text-anchor="middle" font-size="11" fill="#7C2D12">
+      <text x="585" y="133">Planner + sensing</text>
+      <text x="585" y="165">Domain agents</text>
+      <text x="585" y="197">Critic / red-team</text>
+    </g>
+    <text x="585" y="232" text-anchor="middle" font-size="10" fill="#A8A29E">every step audited</text>
+
+    <!-- ===================== Simulators ===================== -->
+    <rect x="490" y="320" width="190" height="110" rx="12" fill="#FFF7ED" stroke="#FB923C" stroke-width="1.5"/>
+    <text x="585" y="344" text-anchor="middle" font-size="13.5" font-weight="600" fill="#9A3412">Simulators</text>
+    <g text-anchor="middle" font-size="11" fill="#7C2D12">
+      <text x="585" y="368">market · treasury</text>
+      <text x="585" y="386">compliance · customer-ops</text>
+    </g>
+    <text x="585" y="408" text-anchor="middle" font-size="10" fill="#A8A29E">confidence intervals + calibration</text>
+
+    <!-- ===================== Policy gate ===================== -->
+    <rect x="730" y="80" width="180" height="230" rx="12" fill="#FFF7ED" stroke="#FB923C" stroke-width="1.5"/>
+    <text x="820" y="104" text-anchor="middle" font-size="13.5" font-weight="600" fill="#9A3412">Policy gate</text>
+    <text x="820" y="121" text-anchor="middle" font-size="10" fill="#A8A29E">execute band = default-deny</text>
+
+    <rect x="745" y="136" width="150" height="32" rx="6" fill="#FFFBEB" stroke="#D97706">
+      <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite"/>
+    </rect>
+    <text x="820" y="156" text-anchor="middle" font-size="11" fill="#92400E">awaiting human</text>
+
+    <rect x="745" y="180" width="150" height="32" rx="6" fill="#F0FDF4" stroke="#16A34A"/>
+    <text x="820" y="200" text-anchor="middle" font-size="11" fill="#166534">approved + token</text>
+
+    <rect x="745" y="224" width="150" height="32" rx="6" fill="#FEF2F2" stroke="#DC2626"/>
+    <text x="820" y="244" text-anchor="middle" font-size="11" fill="#991B1B">blocked</text>
+
+    <text x="820" y="288" text-anchor="middle" font-size="10" fill="#A8A29E">maker-checker · dual control</text>
+
+    <!-- ===================== Connectors ===================== -->
+    <g stroke="#FDBA74" stroke-width="2">
+      <line x1="180" y1="195" x2="236" y2="195" marker-end="url(#ah)"/>
+      <line x1="430" y1="165" x2="486" y2="165" marker-end="url(#ah)"/>
+      <line x1="560" y1="250" x2="560" y2="316" marker-end="url(#ah)"/>
+      <line x1="610" y1="320" x2="610" y2="254" marker-end="url(#ah)"/>
+      <line x1="680" y1="165" x2="726" y2="165" marker-end="url(#ah)"/>
+      <line x1="820" y1="310" x2="820" y2="440" marker-end="url(#ah)"/>
+    </g>
+    <g text-anchor="middle" font-size="10" fill="#A8A29E">
+      <text x="208" y="184">events</text>
+      <text x="458" y="154">typed tools</text>
+      <text x="585" y="289">rehearse</text>
+      <text x="703" y="154">propose</text>
+      <text x="843" y="380">append</text>
+    </g>
+
+    <!-- ===================== Moving dots ===================== -->
+    <g fill="#F97316">
+      <circle r="4.5"><animateMotion path="M184,195 L232,195" dur="1.5s" begin="0s" repeatCount="indefinite"/></circle>
+      <circle r="4.5"><animateMotion path="M184,195 L232,195" dur="1.5s" begin="0.5s" repeatCount="indefinite"/></circle>
+      <circle r="4.5"><animateMotion path="M184,195 L232,195" dur="1.5s" begin="1s" repeatCount="indefinite"/></circle>
+
+      <circle r="4.5"><animateMotion path="M434,165 L482,165" dur="1.6s" begin="0.2s" repeatCount="indefinite"/></circle>
+      <circle r="4.5"><animateMotion path="M434,165 L482,165" dur="1.6s" begin="1s" repeatCount="indefinite"/></circle>
+
+      <circle r="4.5"><animateMotion path="M560,254 L560,312" dur="1.3s" begin="0s" repeatCount="indefinite"/></circle>
+      <circle r="4.5"><animateMotion path="M610,316 L610,258" dur="1.3s" begin="0.65s" repeatCount="indefinite"/></circle>
+
+      <circle r="4.5"><animateMotion path="M684,165 L722,165" dur="1.6s" begin="0.4s" repeatCount="indefinite"/></circle>
+    </g>
+    <circle r="4.5" fill="#16A34A">
+      <animateMotion path="M820,314 L820,436" dur="1.9s" begin="0.8s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- ===================== Audit chain ===================== -->
+    <text x="40" y="468" font-size="12" font-weight="600" fill="#9A3412">Hash-chained audit trail</text>
+    <g stroke="#FDBA74" stroke-width="2">
+      <line x1="290" y1="462" x2="308" y2="462"/>
+      <line x1="338" y1="462" x2="356" y2="462"/>
+      <line x1="386" y1="462" x2="404" y2="462"/>
+      <line x1="434" y1="462" x2="452" y2="462"/>
+      <line x1="482" y1="462" x2="500" y2="462"/>
+      <line x1="530" y1="462" x2="548" y2="462"/>
+      <line x1="578" y1="462" x2="596" y2="462"/>
+      <line x1="626" y1="462" x2="644" y2="462"/>
+      <line x1="674" y1="462" x2="692" y2="462"/>
+    </g>
+    <g fill="#FB923C">
+      <rect x="260" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="0s" repeatCount="indefinite"/></rect>
+      <rect x="308" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="0.3s" repeatCount="indefinite"/></rect>
+      <rect x="356" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="0.6s" repeatCount="indefinite"/></rect>
+      <rect x="404" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="0.9s" repeatCount="indefinite"/></rect>
+      <rect x="452" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="1.2s" repeatCount="indefinite"/></rect>
+      <rect x="500" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="1.5s" repeatCount="indefinite"/></rect>
+      <rect x="548" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="1.8s" repeatCount="indefinite"/></rect>
+      <rect x="596" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="2.1s" repeatCount="indefinite"/></rect>
+      <rect x="644" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="2.4s" repeatCount="indefinite"/></rect>
+      <rect x="692" y="452" width="30" height="20" rx="4"><animate attributeName="fill-opacity" values="0.2;1;0.2" dur="3s" begin="2.7s" repeatCount="indefinite"/></rect>
+    </g>
+    <text x="745" y="467" font-size="11" fill="#16A34A">verify(): ok</text>
+    <text x="470" y="491" text-anchor="middle" font-size="10" fill="#A8A29E">every tool call, simulation, policy verdict and approval is appended to the tamper-evident chain</text>
+  </g>
+</svg>
