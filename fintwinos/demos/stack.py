@@ -66,7 +66,7 @@ def demo_settings(offline_ok: bool = True) -> Settings:
 
 
 def build_stack(
-    seed: int = 7,
+    seed: int | None = None,
     console: Console | None = None,
     offline_ok: bool = True,
     settings: Settings | None = None,
@@ -77,9 +77,14 @@ def build_stack(
     ``fintwinos.tools.catalog`` lazily, guarantees the registry carries a
     policy gate and the demo settings, and shares one audit trail across the
     run so the closing governance summary covers everything.
+
+    ``seed`` defaults to ``Settings.seed`` (``FINTWIN_SEED``), so demo runs are
+    reproducible *and* steerable from the environment.
     """
     settings = settings or demo_settings(offline_ok=offline_ok)
     console = console or Console()
+    if seed is None:
+        seed = settings.seed
 
     from fintwinos.tools.catalog import build_default_registry
     from fintwinos.twin_core.runtime import build_runtime
@@ -175,9 +180,16 @@ async def call_tool(
     caller: str,
     approval: Any = None,
     ticket_id: str | None = None,
+    role: str | None = None,
 ) -> Any:
-    """Dispatch one audited tool call through the registry."""
-    context = CallContext(caller=caller, ticket_id=ticket_id, approval=approval)
+    """Dispatch one audited tool call through the registry.
+
+    ``role`` is asserted in ``CallContext.extra["role"]`` for the RBAC gate;
+    calls without one run under ``Settings.rbac_default_role`` (analyst), which
+    cannot reach the execute band.
+    """
+    extra = {"role": role} if role else {}
+    context = CallContext(caller=caller, ticket_id=ticket_id, approval=approval, extra=extra)
     return await stack.registry.call(name, arguments, context)
 
 
@@ -195,7 +207,10 @@ def ensure_allow_rule(gate: Any, tool_name: str, rule_name: str) -> None:
     execute tool (behind an approval token) must first put an allow rule on
     the record, exactly as an adopting institution would.
     """
-    if gate is None or not hasattr(gate, "add_rule"):
+    # The default gate chain is RbacGate(PolicyGate()): unwrap to the rule-bearing gate.
+    while gate is not None and not hasattr(gate, "add_rule"):
+        gate = getattr(gate, "inner", None)
+    if gate is None:
         return
     existing = {getattr(rule, "name", None) for rule in getattr(gate, "rules", [])}
     if rule_name in existing:

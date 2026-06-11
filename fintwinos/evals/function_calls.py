@@ -667,7 +667,6 @@ class LlmSubject:
             ],
             task=TaskClass.classification,
             tools=self._openai_tools(catalog),
-            temperature=0.0,
         )
         if response.tool_calls:
             call = response.tool_calls[0]

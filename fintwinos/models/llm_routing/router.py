@@ -41,9 +41,14 @@ def estimate_cost_usd(
     price_table: dict[str, tuple[float, float]] | None = None,
 ) -> float:
     table = price_table or DEFAULT_PRICE_TABLE
-    if model not in table:
-        return 0.0
-    in_price, out_price = table[model]
+    prices = table.get(model)
+    if prices is None:
+        # Pinned snapshots ("gpt-5-mini-2025-08-07") price as their longest base match.
+        matches = [name for name in table if model.startswith(name)]
+        if not matches:
+            return 0.0
+        prices = table[max(matches, key=len)]
+    in_price, out_price = prices
     return (input_tokens * in_price + output_tokens * out_price) / 1_000_000
 
 

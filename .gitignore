@@ -31,3 +31,6 @@ datasets/raw/
 .DS_Store
 .idea/
 .vscode/
+
+# Local promo / recording assets (LinkedIn explainer video, voiceover) — never pushed
+/assets/

@@ -10,10 +10,13 @@ Offline:   FINTWIN_OFFLINE={{ index .Values.env "FINTWIN_OFFLINE" | default "1" 
    kubectl --namespace {{ .Release.Namespace }} port-forward \
      svc/{{ include "fintwinos.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
 
-   then check health and list the typed tools:
+   then check health (GET /healthz) and list the typed tools over JSON-RPC
+   (POST /rpc, method "tools/list"):
 
    curl http://127.0.0.1:{{ .Values.service.port }}/healthz
-   curl http://127.0.0.1:{{ .Values.service.port }}/tools
+   curl -X POST http://127.0.0.1:{{ .Values.service.port }}/rpc \
+     -H 'Content-Type: application/json' \
+     -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}'
 
 {{- if .Values.openaiSecret.enabled }}
 

@@ -26,6 +26,8 @@ Routing table (``kind`` prefix -> stores touched):
 ``market.*``    timeseries (prices, cash ladders, any keyed series);
                 ``market.instrument`` -> graph (instrument node)
 ``document.*``  documents + graph (document node, ``references`` edges)
+``filing.*``    documents + graph — alias of ``document.*`` so the EDGAR
+                connector's ``filing.indexed`` envelopes route natively
 ==============  ====================================================================
 
 Unknown prefixes are recorded and audited as ``twin.ingest.unrouted`` but do
@@ -66,6 +68,7 @@ ROUTED_PREFIXES = (
     "policy",
     "market",
     "document",
+    "filing",
 )
 
 
@@ -112,6 +115,7 @@ class TwinIngestor:
             "policy": self._on_policy,
             "market": self._on_market,
             "document": self._on_document,
+            "filing": self._on_document,  # EDGAR filing.* -> document store
         }
 
     # -- public API ---------------------------------------------------------------------

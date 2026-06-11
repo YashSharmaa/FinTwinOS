@@ -27,7 +27,7 @@ from rich.table import Table
 
 from fintwinos.core.config import Settings
 from fintwinos.core.types import (
-    ApprovalToken,
+    ApprovalStatus,
     EntityRef,
     RiskTier,
     SideEffectClass,
@@ -50,6 +50,7 @@ from fintwinos.demos.stack import (
     schema_args,
 )
 from fintwinos.models.llm_routing.router import TaskClass
+from fintwinos.policy.approvals import ApprovalWorkflow
 from fintwinos.tools.registry import CallContext, ToolSpec
 
 CASE_ID = "case_0001"  # the open aml_alert case shipped with the demo twin
@@ -324,19 +325,23 @@ async def _case_narrative(
         narrative = _fallback_narrative(top_alert, surge)
 
     if not stack.llm.offline:
-        response = await stack.llm.complete(
-            [
-                {
-                    "role": "system",
-                    "content": "You are an AML investigator. Tighten this draft case narrative "
-                    "into 3 crisp sentences. Keep every figure unchanged.",
-                },
-                {"role": "user", "content": narrative},
-            ],
-            task=TaskClass.drafting,
-        )
-        if response.text.strip() and not response.offline:
-            narrative = response.text.strip()
+        try:
+            response = await stack.llm.complete(
+                [
+                    {
+                        "role": "system",
+                        "content": "You are an AML investigator. Tighten this draft case narrative "
+                        "into 3 crisp sentences. Keep every figure unchanged.",
+                    },
+                    {"role": "user", "content": narrative},
+                ],
+                task=TaskClass.drafting,
+            )
+        except Exception as exc:  # LLM polish is enrichment, never a dependency
+            warnings.append(f"LLM narrative polish unavailable: {type(exc).__name__}: {exc}")
+        else:
+            if response.text.strip() and not response.offline:
+                narrative = response.text.strip()
 
     console.print(
         Panel(
@@ -408,11 +413,14 @@ async def _close_case_flow(
     )
 
     previous_enabled = stack.registry.settings.execute_tools_enabled
+    previous_shadow = stack.registry.settings.shadow_mode
     try:
         # --- Branch 1: no approval, execute band disabled → refusal. -------------
         stack.registry.settings.execute_tools_enabled = False
         refused = await stack.registry.call(
-            CLOSE_TOOL, close_args, CallContext(caller="demo.aml_triage")
+            CLOSE_TOOL,
+            close_args,
+            CallContext(caller="demo.aml_triage", extra={"role": "operator"}),
         )
         console.print(
             Panel(
@@ -423,22 +431,37 @@ async def _close_case_flow(
             )
         )
 
-        # --- Branch 2: allow rule + ApprovalToken + execute switch → goes through.
+        # --- Branch 2: allow rule + maker-checker approvals + execute switch. -----
+        # The token is minted through the real ApprovalWorkflow: the requester can
+        # never self-approve, and the high-risk tier needs two distinct approvers
+        # under dual control — exactly what an adopting institution would run.
         ensure_allow_rule(stack.registry.policy_gate, CLOSE_TOOL, "demo-allow-close-case")
         stack.registry.settings.execute_tools_enabled = True
-        token = ApprovalToken(
-            subject=CLOSE_TOOL,
-            granted_by="mlro.on.duty",
-            role="MLRO",
+        stack.registry.settings.shadow_mode = False
+        console.print(
+            "[dim]demo: FINTWIN_SHADOW_MODE disabled for this branch to demonstrate the "
+            "real (outbox-only) write path; production deployments keep it on.[/dim]"
+        )
+        workflow = ApprovalWorkflow(audit=stack.registry.audit, settings=stack.settings)
+        request = workflow.request(
+            spec, requested_by="demo.aml_triage", reason=f"close case {CASE_ID}",
             scope={"case_id": CASE_ID, "ticket": "FCC-2031"},
         )
+        workflow.approve(request.request_id, approver="mlro.on.duty", role="approver")
+        if request.status != ApprovalStatus.approved:
+            workflow.approve(request.request_id, approver="deputy.mlro", role="approver")
+        token = workflow.tokens(request.request_id)[0]
         approved = await stack.registry.call(
             CLOSE_TOOL,
             close_args,
-            CallContext(caller="demo.aml_triage", ticket_id="FCC-2031", approval=token),
+            CallContext(
+                caller="demo.aml_triage", ticket_id="FCC-2031", approval=token,
+                extra={"role": "operator"},
+            ),
         )
     finally:
         stack.registry.settings.execute_tools_enabled = previous_enabled
+        stack.registry.settings.shadow_mode = previous_shadow
 
     outbox_dir = Path(stack.settings.data_dir) / "outbox"
     outbox_files = sorted(str(p) for p in outbox_dir.glob("*")) if outbox_dir.exists() else []

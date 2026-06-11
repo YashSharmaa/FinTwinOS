@@ -38,7 +38,9 @@ def test_snapshot_shape_and_hash_stability():
     snap1 = take_snapshot(graph, timeseries)
     snap2 = take_snapshot(graph, timeseries)
     assert snap1["hash"] == snap2["hash"]
-    assert set(snap1) == {"version", "entities", "relationships", "timeseries", "hash"}
+    assert set(snap1) == {
+        "version", "entities", "relationships", "timeseries", "documents", "hash"
+    }
     assert "customer:c1" in snap1["entities"]
     assert "customer:c1|owns|account:a1" in snap1["relationships"]
     assert snap1["timeseries"]["balance:a1"]["points"] == 1

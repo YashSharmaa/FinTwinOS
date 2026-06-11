@@ -31,8 +31,9 @@ from typing import Any
 
 from fintwinos.core.audit import AuditTrail
 from fintwinos.core.config import Settings, get_settings
-from fintwinos.core.errors import ToolNotFound
+from fintwinos.core.errors import PolicyViolation, ToolNotFound
 from fintwinos.core.types import ToolBand, ToolResult, utcnow
+from fintwinos.policy.rbac import Action, can
 from fintwinos.tools.registry import ToolRegistry
 
 #: File name of the persisted state inside ``settings.data_dir``.
@@ -123,16 +124,44 @@ class KillSwitch:
 
     # -- engage / release ----------------------------------------------------------------
 
+    def _authorise(self, role: str | None, action: Action, actor: str, verb: str) -> None:
+        """Enforce an RBAC action when a role is supplied; fail closed otherwise.
+
+        ``role=None`` is the trusted-caller path (no check). When a role is
+        given and lacks the permission, the attempt is audited and a
+        :class:`PolicyViolation` is raised before any state change.
+        """
+        if role is None:
+            return
+        if not can(role, action):
+            self.audit.append(
+                actor,
+                "killswitch.blocked",
+                {"reason": f"role '{role}' may not {verb} the kill switch", "action": action.value},
+            )
+            raise PolicyViolation(f"role '{role}' does not hold the {action.value} permission")
+
     def engage(
-        self, actor: str, reason: str, band: ToolBand | str | None = None
+        self,
+        actor: str,
+        reason: str,
+        band: ToolBand | str | None = None,
+        *,
+        role: str | None = None,
     ) -> dict[str, Any]:
         """Engage the kill switch globally (``band=None``) or for one band.
 
         ``reason`` is mandatory: it is persisted, audited, and echoed verbatim
         in every refused tool call so operators see *why* the platform halted.
+
+        When ``role`` is supplied it must hold the ``killswitch.engage``
+        permission (operator or admin); the check fails closed on an unknown
+        role. ``role=None`` (the default) skips the RBAC check for trusted
+        in-process / CLI callers.
         """
         if not reason or not reason.strip():
             raise ValueError("a reason is required to engage the kill switch")
+        self._authorise(role, Action.killswitch_engage, actor, "engage")
         scope = _normalise_band(band)
         entry = {
             "engaged": True,
@@ -156,11 +185,22 @@ class KillSwitch:
         return self.status()
 
     def release(
-        self, actor: str, reason: str, band: ToolBand | str | None = None
+        self,
+        actor: str,
+        reason: str,
+        band: ToolBand | str | None = None,
+        *,
+        role: str | None = None,
     ) -> dict[str, Any]:
-        """Release the global switch (``band=None``) or one band's switch."""
+        """Release the global switch (``band=None``) or one band's switch.
+
+        When ``role`` is supplied it must hold the ``killswitch.release``
+        permission, which is reserved for ``admin`` (operators may engage but
+        not release). ``role=None`` skips the RBAC check for trusted callers.
+        """
         if not reason or not reason.strip():
             raise ValueError("a reason is required to release the kill switch")
+        self._authorise(role, Action.killswitch_release, actor, "release")
         scope = _normalise_band(band)
         entry = {
             "engaged": False,

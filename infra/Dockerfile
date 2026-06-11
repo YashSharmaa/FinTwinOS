@@ -12,10 +12,14 @@
 # back to their rule-based paths. Mount an .env / set OPENAI_API_KEY and
 # FINTWIN_OFFLINE=0 to enable live LLM calls.
 #
-# Build (from the repository root):
-#   docker build -f infra/Dockerfile -t fintwinos/tools-server:0.1.0 .
+# The canonical image is published to GitHub Container Registry by
+# .github/workflows/release.yml on every v* tag:
+#   ghcr.io/yashsharmaa/fintwinos-tools-server
+#
+# Build locally (from the repository root):
+#   docker build -f infra/Dockerfile -t ghcr.io/yashsharmaa/fintwinos-tools-server:0.1.0 .
 # Run:
-#   docker run --rm -p 8341:8341 fintwinos/tools-server:0.1.0
+#   docker run --rm -p 8341:8341 ghcr.io/yashsharmaa/fintwinos-tools-server:0.1.0
 
 ARG PYTHON_VERSION=3.12
 

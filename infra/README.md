@@ -16,7 +16,7 @@ endpoint for probes.
 | Mode | Best for | Command | Secrets needed |
 |---|---|---|---|
 | **Local (pip)** | Development, demos, evals | `make install && make serve` | None (offline) |
-| **Docker** | Single-host trials, air-gapped labs | `make docker-build && docker run --rm -p 8341:8341 fintwinos/tools-server:0.1.0` | None (offline by default) |
+| **Docker** | Single-host trials, air-gapped labs | `make docker-build && docker run --rm -p 8341:8341 ghcr.io/yashsharmaa/fintwinos-tools-server:0.1.0` | None (offline by default) |
 | **Compose** | Persistent single-host service with state volume | `cd infra && docker compose up --build` | None; optional `.env` at repo root |
 | **Helm / on-prem Kubernetes** | Production, shadow-mode pilots, regulated on-prem clusters | `helm install fintwinos infra/helm/fintwinos` | None; optional `Secret` for the OpenAI key |
 
@@ -40,10 +40,11 @@ reports) under the `/data` volume.
 
 ```bash
 make docker-build
-docker run --rm -p 8341:8341 fintwinos/tools-server:0.1.0          # offline
+docker run --rm -p 8341:8341 \
+  ghcr.io/yashsharmaa/fintwinos-tools-server:0.1.0                 # offline
 docker run --rm -p 8341:8341 \
   -e FINTWIN_OFFLINE=0 -e OPENAI_API_KEY=sk-... \
-  fintwinos/tools-server:0.1.0                                     # live
+  ghcr.io/yashsharmaa/fintwinos-tools-server:0.1.0                 # live
 ```
 
 ### Compose
@@ -113,7 +114,7 @@ conventional `OPENAI_API_KEY`).
 | `FINTWIN_LLM_MODEL_FAST` | `gpt-5-mini` | Drafting, extraction |
 | `FINTWIN_LLM_MODEL_CHEAP` | `gpt-5-nano` | Classification, routing |
 | `FINTWIN_LLM_TEMPERATURE` | `0.2` | Sampling temperature |
-| `FINTWIN_LLM_MAX_OUTPUT_TOKENS` | `2048` | Per-call output cap |
+| `FINTWIN_LLM_MAX_OUTPUT_TOKENS` | `4096` | Per-call output cap |
 | `FINTWIN_REQUEST_TIMEOUT` | `60.0` | LLM request timeout (seconds) |
 | `FINTWIN_MAX_RETRIES` | `3` | LLM retry budget |
 | `FINTWIN_SEED` | `7` | Global determinism seed |

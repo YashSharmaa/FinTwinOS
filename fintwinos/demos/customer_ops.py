@@ -45,6 +45,7 @@ from fintwinos.demos.stack import (
     render_header,
     schema_args,
 )
+from fintwinos.models.llm_routing.router import TaskClass
 from fintwinos.policy.gates import PolicyGate
 
 BASELINE_AGENTS = 8
@@ -105,6 +106,10 @@ async def arun(
         title="Routing change · propose-only",
     )
 
+    customer_note = await _draft_customer_note(stack, baseline, counterfactual, warnings)
+    console.print(f"[bold]Draft customer holding note[/bold] "
+                  f"([dim]{customer_note['source']}[/dim]): {customer_note['text']}")
+
     audit = audit_summary(stack.registry.audit)
     render_audit_excerpt(console, audit["excerpt"])
 
@@ -121,9 +126,55 @@ async def arun(
         "decision": decision,
         "policy": policy,
         "proposal_tool": proposal,
+        "customer_note": customer_note,
         "audit": audit,
         "warnings": warnings,
     }
+
+
+async def _draft_customer_note(
+    stack: DemoStack,
+    baseline: dict[str, Any],
+    counterfactual: dict[str, Any],
+    warnings: list[str],
+) -> dict[str, Any]:
+    """Draft a compliant customer holding note — deterministic text, LLM-polished online.
+
+    The LLM is enrichment only: any API failure degrades to the rule-based
+    draft with a recorded warning, never a crash.
+    """
+    base_wait = baseline.get("metrics", {}).get("avg_wait_hours")
+    cf_wait = counterfactual.get("metrics", {}).get("avg_wait_hours")
+    draft = (
+        "We are handling an unusually high volume of complaints and current responses are "
+        f"taking around {base_wait:.0f} hours on average. We have proposed additional staffing "
+        f"that our simulations indicate would bring this down to roughly {cf_wait:.0f} hours. "
+        "Your complaint remains in the queue and you do not need to contact us again."
+        if isinstance(base_wait, int | float) and isinstance(cf_wait, int | float)
+        else "We are handling an unusually high volume of complaints; your case remains in the "
+             "queue and you do not need to contact us again."
+    )
+    if stack.llm.offline:
+        return {"text": draft, "source": "rule-based"}
+    try:
+        response = await stack.llm.complete(
+            [
+                {
+                    "role": "system",
+                    "content": "You polish customer communications for a regulated financial "
+                    "firm. Rewrite the note in a warm, plain-English tone. Keep every figure "
+                    "unchanged, make no promises beyond the draft, two sentences maximum.",
+                },
+                {"role": "user", "content": draft},
+            ],
+            task=TaskClass.drafting,
+        )
+    except Exception as exc:
+        warnings.append(f"LLM customer-note polish unavailable: {type(exc).__name__}: {exc}")
+        return {"text": draft, "source": "rule-based (LLM unavailable)"}
+    if response.text.strip() and not response.offline:
+        return {"text": response.text.strip(), "source": f"llm ({response.model})"}
+    return {"text": draft, "source": "rule-based"}
 
 
 async def _observe_queue_state(stack: DemoStack, warnings: list[str]) -> dict[str, Any]:

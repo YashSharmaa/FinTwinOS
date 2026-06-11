@@ -26,6 +26,7 @@ def settings(tmp_path) -> Settings:
         openai_api_key=None,
         data_dir=tmp_path,
         execute_tools_enabled=True,
+        shadow_mode=False,  # these tests assert the real handler/outbox path
     )
 
 
@@ -97,6 +98,27 @@ async def test_execute_band_halt_blocks_only_execute(settings, registry):
     still_ok = await registry.call("observe_balance", {}, CallContext(caller="ops"))
     assert still_ok.ok
     assert registry.audit.records(action="killswitch.blocked")
+
+
+def test_role_enforcement_when_role_supplied(settings):
+    from fintwinos.core.errors import PolicyViolation
+
+    ks = KillSwitch(settings=settings, audit=AuditTrail())
+    # operator may engage but not release; admin may do both.
+    ks.engage("ops", "incident", band="execute", role="operator")
+    with pytest.raises(PolicyViolation, match="killswitch.release"):
+        ks.release("ops", "resolved", band="execute", role="operator")
+    ks.release("root", "resolved", band="execute", role="admin")
+    assert not ks.is_engaged(ToolBand.execute)
+    assert ks.audit.records(action="killswitch.blocked")
+
+
+def test_role_none_skips_rbac(settings):
+    ks = KillSwitch(settings=settings, audit=AuditTrail())
+    # No role -> trusted-caller path, no RBAC check (current default behaviour).
+    ks.engage("cli", "halt")
+    ks.release("cli", "resolved")
+    assert not ks.is_engaged()
 
 
 async def test_global_halt_blocks_everything(settings, registry):

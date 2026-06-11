@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fintwinos.core.types import SideEffectClass, ToolBand
 from fintwinos.policy.gates import PolicyGate
+from fintwinos.policy.rbac import RbacGate, Role
 from fintwinos.tools.catalog import build_default_registry, catalog_summary
 
 EXPECTED_TOOLS = {
@@ -108,7 +109,10 @@ def test_non_execute_tools_are_side_effect_free(registry):
 
 def test_default_policy_gate_attached_and_custom_gate_respected(fake_runtime, settings):
     default = build_default_registry(fake_runtime, settings=settings)
-    assert isinstance(default.policy_gate, PolicyGate)
+    # The default gate chain is RBAC wrapping the conservative policy gate.
+    assert isinstance(default.policy_gate, RbacGate)
+    assert isinstance(default.policy_gate.inner, PolicyGate)
+    assert default.policy_gate.default_role == Role.analyst
 
     custom = PolicyGate(rules=[])
     registry = build_default_registry(fake_runtime, policy_gate=custom, settings=settings)

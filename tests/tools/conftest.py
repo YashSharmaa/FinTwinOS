@@ -472,9 +472,10 @@ def registry(fake_runtime, settings):
 
 @pytest.fixture
 def exec_settings(tmp_path) -> Settings:
-    """Offline settings with the execute band explicitly enabled."""
+    """Offline settings exercising the *real* execute path: band enabled, shadow off."""
     return Settings(
-        offline=True, seed=7, data_dir=tmp_path / "data", execute_tools_enabled=True
+        offline=True, seed=7, data_dir=tmp_path / "data",
+        execute_tools_enabled=True, shadow_mode=False,
     )
 
 

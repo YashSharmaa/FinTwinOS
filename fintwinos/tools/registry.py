@@ -51,6 +51,10 @@ class ToolSpec(BaseModel):
     side_effect: SideEffectClass = SideEffectClass.none
     requires_human_approval: bool = False
     provenance_required: bool = False
+    # Advisory metadata surfaced to MCP clients as ``x_idempotent``: whether the
+    # operation is *naturally* idempotent (re-running it has no extra effect).
+    # At-most-once execution is provided uniformly by the registry's
+    # ``CallContext.idempotency_key`` replay cache, independent of this flag.
     idempotent: bool = True
     owner: str = "platform"
 
@@ -206,7 +210,9 @@ class ToolRegistry:
                     ok=False, tool=name,
                     error=f"denied by policy: {'; '.join(verdict.reasons) or 'no rule allows this call'}",
                 )
-            if verdict.requires_human_review and not _has_valid_approval(spec, context):
+            if verdict.requires_human_review and not _has_valid_approval(
+                spec, context, self.settings
+            ):
                 return ToolResult(
                     ok=False, tool=name, requires_approval=True,
                     error="policy requires human review; attach an approval token",
@@ -221,17 +227,33 @@ class ToolRegistry:
                 self.audit.append(context.caller, "tool.idempotent_replay", {"tool": name})
                 return cached
 
-        # 5. Invoke
+        # 5. Invoke. Shadow mode is checked *after* every gate so the full control
+        #    chain is exercised, but the side-effecting handler itself never runs.
+        shadow_execute = (
+            self.settings.shadow_mode
+            and spec.band == ToolBand.execute
+            and not context.dry_run
+        )
         record = self.audit.append(
             context.caller,
             "tool.called",
             {"tool": name, "band": spec.band.value, "ticket_id": context.ticket_id,
-             "dry_run": context.dry_run, "arguments": arguments},
+             "dry_run": context.dry_run, "shadow": shadow_execute, "arguments": arguments},
         )
         try:
             handler = self._handlers[name]
             if context.dry_run and spec.band == ToolBand.execute:
                 data: Any = {"dry_run": True, "would_execute": name, "arguments": arguments}
+            elif shadow_execute:
+                self.audit.append(
+                    context.caller, "tool.shadow_intercepted", {"tool": name}
+                )
+                data = {
+                    "shadow": True,
+                    "would_execute": name,
+                    "arguments": arguments,
+                    "note": "FINTWIN_SHADOW_MODE=1: decision logged, action not taken",
+                }
             else:
                 data = handler(arguments, context)
                 if asyncio.iscoroutine(data):
@@ -274,7 +296,7 @@ class ToolRegistry:
                 error="execute band is disabled in this deployment "
                       "(FINTWIN_EXECUTE_TOOLS_ENABLED=0); run in dry_run or shadow mode",
             )
-        if not _has_valid_approval(spec, context):
+        if not _has_valid_approval(spec, context, self.settings):
             self.audit.append(
                 context.caller, "tool.approval_missing", {"tool": spec.name}
             )
@@ -285,5 +307,15 @@ class ToolRegistry:
         return None
 
 
-def _has_valid_approval(spec: ToolSpec, context: CallContext) -> bool:
-    return context.approval is not None and context.approval.is_valid_for(spec.name)
+def _has_valid_approval(
+    spec: ToolSpec, context: CallContext, settings: Settings | None = None
+) -> bool:
+    token = context.approval
+    if token is None or not token.is_valid_for(spec.name):
+        return False
+    secret = settings.approval_secret if settings is not None else None
+    if secret:
+        # With a deployment secret configured, only workflow-minted (signed)
+        # tokens are honoured — a self-asserted token from an RPC body fails.
+        return token.verify_signature(secret)
+    return True

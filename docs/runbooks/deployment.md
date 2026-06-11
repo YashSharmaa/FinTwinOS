@@ -73,7 +73,7 @@ All settings are read by `fintwinos/core/config.py` from the environment (prefix
 | `FINTWIN_LLM_MODEL_FAST` | `gpt-5-mini` | Drafting, extraction tier |
 | `FINTWIN_LLM_MODEL_CHEAP` | `gpt-5-nano` | Classification, routing, cheap calls |
 | `FINTWIN_LLM_TEMPERATURE` | `0.2` | Sampling temperature for LLM calls |
-| `FINTWIN_LLM_MAX_OUTPUT_TOKENS` | `2048` | Output token cap per call |
+| `FINTWIN_LLM_MAX_OUTPUT_TOKENS` | `4096` | Output token cap per call |
 | `FINTWIN_REQUEST_TIMEOUT` | `60.0` | Per-request timeout (seconds) for LLM calls |
 | `FINTWIN_MAX_RETRIES` | `3` | Bounded retries with exponential backoff for transient LLM failures |
 

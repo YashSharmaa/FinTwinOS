@@ -43,7 +43,7 @@ serve: ## Serve the typed tool catalog (HOST/PORT overridable)
 	$(CLI) serve-tools --host $(HOST) --port $(PORT)
 
 docker-build: ## Build the tools-server image from infra/Dockerfile
-	docker build -f infra/Dockerfile -t fintwinos/tools-server:$(VERSION) .
+	docker build -f infra/Dockerfile -t ghcr.io/yashsharmaa/fintwinos-tools-server:$(VERSION) .
 
 schemas: ## Export canonical entity JSON Schemas to ./schemas
 	$(CLI) export-schemas --out schemas

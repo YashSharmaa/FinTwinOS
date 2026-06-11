@@ -8,7 +8,7 @@
 
 <p>
   <a href="https://github.com/YashSharmaa/FinTwinOS/actions/workflows/ci.yml"><img src="https://github.com/YashSharmaa/FinTwinOS/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
-  <img src="https://img.shields.io/badge/tests-949%20passing-16a34a" alt="tests: 949 passing"/>
+  <img src="https://img.shields.io/badge/tests-973%20passing-16a34a" alt="tests: 973 passing"/>
   <img src="https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776AB?logo=python&logoColor=white" alt="Python 3.11–3.13"/>
   <img src="https://img.shields.io/badge/license-MIT-F97316" alt="MIT License"/>
   <img src="https://img.shields.io/badge/LLM-OpenAI-412991?logo=openai&logoColor=white" alt="LLM provider: OpenAI"/>
@@ -75,6 +75,61 @@ deliberately conservative on autonomy.
 | 🔌 Data | `fintwinos/connectors`, `fintwinos/datasets` | EDGAR, CSV/CDC/webhook connectors; synthetic generators for transactions, fraud rings, journeys, market paths; data cards |
 | 🎬 Demos | `fintwinos/demos`, `examples/` | Liquidity stress, AML triage, analyst research, customer ops and an end-to-end day-in-the-life — all runnable fully offline |
 
+## The five domains
+
+All five domains run on the **same substrate** — a stateful twin, not just prompts.
+Compliance is a subgraph problem; trading and treasury need calibrated time-series and
+scenario engines; risk needs versioned models and counterfactual replay; customer
+operations needs calibrated queue and persona simulation. That is why FinTwinOS is an
+operating system rather than a wrapper.
+
+| Domain | What the twin mirrors | What the swarm does | Value |
+|---|---|---|---|
+| **Risk** | Positions, exposures, limits, market regimes, model versions | Stress-tests shocks, ranks hedges, explains limit breaches, detects regime shifts | Faster stress testing, clearer limit governance, model lineage |
+| **Trading** | Order flow, inventory, venue conditions, market-impact assumptions | Rehearses routing/execution/inventory choices before production | Lower slippage risk, safer strategy iteration, better surveillance |
+| **Compliance** | Customer/entity graph, KYC docs, alerts, policy corpus, case history | Scores AML subgraphs, prioritises alerts, drafts narratives, tunes thresholds | Higher analyst throughput with preserved auditability |
+| **Treasury** | Cash ladders, collateral, intraday liquidity, funding spreads | Simulates liquidity stress, recommends transfers, prioritises contingency actions | Better resilience and funding efficiency under stress |
+| **Customer ops** | Journey state, channels, documents, complaints, SLA queues | Routes cases, predicts escalations, drafts compliant responses, simulates policy | Lower handling time, fewer SLA breaches |
+
+## Who it's for — industries & use cases
+
+| Industry | Representative use cases |
+|---|---|
+| **Global & retail banks** | Intraday liquidity stress rehearsal; AML alert triage with graph scoring; SR 11-7 model inventory & effective challenge; KYC-refresh case routing |
+| **Asset managers · hedge funds · prop trading** | Pre-trade market-impact and routing rehearsal; portfolio shock testing with Expected-Shortfall rewards; surveillance and limit governance |
+| **Payments & fintechs · neobanks** | Real-time fraud-ring detection on the transaction graph; complaint/SLA queue simulation; chargeback and dispute case automation behind approvals |
+| **Insurers** | Exposure accumulation and catastrophe scenario rehearsal; claims-triage queues; conduct-risk review of automated decisions |
+| **Market infrastructure** (exchanges, CCPs, custodians) | Default-management and margin-stress rehearsal; collateral optimisation; resilience/incident drills (DORA) |
+| **RegTech · model-risk · compliance teams** | A regulator-ready control plane: tamper-evident audit, maker-checker, kill switch, break-glass, and a controls map to SR 11-7 / DORA / EU AI Act / NIST AI RMF |
+| **Corporate treasury** | Multi-currency cash-ladder stress, funding-cost optimisation, contingency-action prioritisation |
+
+The common thread: institutions can **rehearse decisions on a calibrated twin and prove
+the control story** before anything touches a production system — exactly the
+inspectable, hybrid-deployable, regulator-ready posture the 2024–2026 supervisory and
+benchmark evidence calls for.
+
+## Seeing it work
+
+`fintwinos demo aml_triage` runs the whole stack on a seeded demo bank — offline with
+deterministic stubs, or live against OpenAI with a key. The AML subgraph scorer ranks a
+laundering ring, an LLM drafts the case narrative over real twin entities, and the
+**governance plane** does its job:
+
+```text
+execute_close_case · attempt without approval
+  refused — execute band is disabled (FINTWIN_EXECUTE_TOOLS_ENABLED=0)
+
+execute_close_case · with granted ApprovalToken (dual control)
+  executed — approval apr_… granted by mlro.on.duty + deputy.mlro
+
+Audit trail (tail)
+  approval.requested → approval.approved → approval.approved → approval.granted
+  → policy.checked → tool.called → case.closed → tool.completed   (hash-chained)
+```
+
+Run live and the planner returns `status: awaiting_human`, `action_type: propose_only` —
+the system proposes, it does not act. Conservative-on-autonomy by construction.
+
 ## Quickstart
 
 ```bash
@@ -91,6 +146,16 @@ fintwinos demo day_in_the_life
 
 # Serve the typed tool catalog over MCP-style JSON-RPC:
 fintwinos serve-tools
+
+# Ingest data, browse datasets, run the bounded RL pipeline, prove replay determinism:
+fintwinos ingest trades.csv --kind trade.executed --entity-type trade
+fintwinos ingest --edgar 320193          # SEC EDGAR filings -> document store
+fintwinos datasets list                  # registered datasets + offline availability
+fintwinos rl --report-dir .fintwinos/rl  # log -> train -> OPE -> shadow -> gate
+fintwinos replay-verify                  # rebuild the twin from its episode, compare hashes
+
+# Operate the platform kill switch (optional --role enforces RBAC):
+fintwinos killswitch engage --band execute --reason "incident-7" --role operator
 
 # Inspect configuration and export canonical JSON Schemas:
 fintwinos info

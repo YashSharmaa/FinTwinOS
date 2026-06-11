@@ -16,6 +16,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fintwinos.core.audit import AuditTrail
+from fintwinos.core.config import get_settings
 from fintwinos.core.interfaces import TwinRuntime
 from fintwinos.twin_core.demo_data import load_demo_data
 from fintwinos.twin_core.documents import TfidfDocumentStore
@@ -45,8 +46,9 @@ def build_runtime(
     data_dir:
         Optional directory for persistence. When given, replay episodes are
         written as JSONL under ``<data_dir>/episodes`` and the audit trail
-        under ``<data_dir>/audit.jsonl``; when omitted (the default)
-        everything stays in memory.
+        under ``<data_dir>/audit.jsonl``. When omitted, the audit trail is
+        still persisted to ``Settings.audit_path`` (``FINTWIN_AUDIT_PATH``)
+        if that is configured; otherwise everything stays in memory.
 
     Returns
     -------
@@ -65,7 +67,8 @@ def build_runtime(
         audit = AuditTrail(base / "audit.jsonl")
     else:
         replay = JsonlReplayEngine()
-        audit = AuditTrail()
+        audit_path = get_settings().audit_path
+        audit = AuditTrail(path=audit_path) if audit_path is not None else AuditTrail()
 
     resolver = EntityResolver()
     ingestor = TwinIngestor(

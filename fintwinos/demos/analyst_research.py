@@ -115,12 +115,15 @@ class BriefCritic(BaseAgent):
             "Rule-based critic: every claim was checked for citation presence, citation "
             "resolution and lexical grounding against the cited filings."
         )
-        response = await self.ask_llm(
-            ctx,
-            "Critique this cited research brief in two sentences. Flag any claim that "
-            f"overreaches its citations:\n{brief}",
-        )
-        if not response.offline and response.text.strip():
+        try:
+            response = await self.ask_llm(
+                ctx,
+                "Critique this cited research brief in two sentences. Flag any claim that "
+                f"overreaches its citations:\n{brief}",
+            )
+        except Exception:  # the deterministic critique above already stands
+            response = None
+        if response is not None and not response.offline and response.text.strip():
             commentary = response.text.strip()
 
         passed = not any(c["severity"] == "high" for c in challenges)
@@ -307,20 +310,24 @@ async def _build_brief(
             warnings.append(f"no retrieval hits for topic '{topic}'")
 
         if excerpts and not stack.llm.offline:
-            response = await stack.llm.complete(
-                [
-                    {
-                        "role": "system",
-                        "content": "You are an equity research analyst. Synthesise ONE factual "
-                        "sentence strictly from the excerpts provided. No outside knowledge.",
-                    },
-                    {"role": "user", "content": f"Topic: {topic}\n\nExcerpts:\n" + "\n---\n".join(excerpts)},
-                ],
-                task=TaskClass.analysis,
-            )
-            if not response.offline and response.text.strip():
-                claim = response.text.strip()
-                source = "llm"
+            try:
+                response = await stack.llm.complete(
+                    [
+                        {
+                            "role": "system",
+                            "content": "You are an equity research analyst. Synthesise ONE factual "
+                            "sentence strictly from the excerpts provided. No outside knowledge.",
+                        },
+                        {"role": "user", "content": f"Topic: {topic}\n\nExcerpts:\n" + "\n---\n".join(excerpts)},
+                    ],
+                    task=TaskClass.analysis,
+                )
+            except Exception as exc:  # extractive claim stands; LLM is enrichment only
+                warnings.append(f"LLM synthesis unavailable for '{topic}': {type(exc).__name__}: {exc}")
+            else:
+                if not response.offline and response.text.strip():
+                    claim = response.text.strip()
+                    source = "llm"
 
         brief.append({"topic": topic, "claim": claim, "citations": citations, "source": source})
     return brief

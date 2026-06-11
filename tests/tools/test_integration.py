@@ -48,9 +48,23 @@ async def test_observe_band_works_on_real_twin(real_registry):
         ("observe_cash_ladder", {}),
         ("observe_alerts", {}),
         ("observe_queue_state", {}),
+        ("observe_market_regime", {}),
     ):
         result = await real_registry.call(tool, arguments, CTX)
         assert result.ok, f"{tool}: {result.error}"
+
+
+async def test_observe_market_regime_detects_on_price_series(real_registry):
+    """The regime tool runs the z-score detector over a real twin price series."""
+    result = await real_registry.call(
+        "observe_market_regime", {"on": "abs_returns", "window": 20}, CTX
+    )
+    assert result.ok, result.error
+    data = result.data
+    assert data["series_key"].startswith("price:")
+    assert data["current_regime"] in {"calm", "stressed"}
+    assert 0.0 <= data["stressed_fraction"] <= 1.0
+    assert data["n_change_points"] == len(data["change_points"])
 
 
 async def test_simulate_liquidity_stress_on_real_twin(real_registry, real_runtime):

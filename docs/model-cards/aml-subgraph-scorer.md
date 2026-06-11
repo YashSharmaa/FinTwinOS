@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Artefact** | Graph-based suspicious-pattern scorer for AML alert prioritisation at the *subgraph* level |
-| **Modules** | `fintwinos/models/` (graph AML scoring), consuming the `GraphStore` in `fintwinos/twin_core/` via `observe_*` tools |
+| **Modules** | `fintwinos/models/graph/` (feature extraction + scorer), scoring account-transfer subgraphs extracted from the `GraphStore` in `fintwinos/twin_core/`; exercised by the evals harness and tests |
 | **Type** | Classical graph model — numpy/networkx feature extraction with a deterministic scoring head; no deep-learning dependency |
 | **Version** | Tracks the FinTwinOS release; scoring assumptions versioned alongside simulator `assumptions_version` conventions |
 | **Owner** | Compliance domain (model risk sign-off required before any production use) |
@@ -88,9 +88,11 @@ reproducible from a released eval report.
 
 ## Governance hooks
 
-- All scorer access is through banded tools: `observe_*` reads and `propose_*`
-  prioritisations are side-effect free by registry invariant; nothing the scorer
-  does can touch a case file without a human.
+- The scorer is read-only and side-effect free: it ranks subgraph suspicion and
+  never mutates the twin. When surfaced to investigators it belongs in the
+  `observe_*`/`propose_*` bands (a documented extension point alongside the
+  shipped `observe_entity_graph`/`propose_case_narrative` compliance tools);
+  nothing the scorer does can touch a case file without a human.
 - Every scoring run that informs a case is auditable: tool calls, the alert's
   entity refs, and the provenance of contributing edges are in the audit chain.
 - Status changes on alerts/cases flow through `CaseRecord`/`Alert` state machines

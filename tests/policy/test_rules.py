@@ -23,16 +23,39 @@ from fintwinos.tools.registry import ToolSpec
 EXPECTED_PACKS = {"baseline", "treasury", "compliance", "trading_limits"}
 
 
-def exec_spec(name: str = "execute_post_transfer", tier: RiskTier = RiskTier.high) -> ToolSpec:
+def exec_spec(
+    name: str = "execute_post_transfer",
+    tier: RiskTier = RiskTier.high,
+    side_effect: SideEffectClass = SideEffectClass.reversible,
+) -> ToolSpec:
     return ToolSpec(
         name=name,
         description="test execute tool",
         input_schema={"type": "object"},
         band=ToolBand.execute,
         risk_tier=tier,
-        side_effect=SideEffectClass.reversible,
+        side_effect=side_effect,
         requires_human_approval=True,
     )
+
+
+def test_deny_irreversible_critical_targets_only_irreversible():
+    """The shipped deny rule fires on irreversible critical tools, not reversible ones."""
+    deny = next(r for r in default_rules() if r.name == "deny-irreversible-critical")
+    irreversible = exec_spec("execute_wire", RiskTier.critical, SideEffectClass.irreversible)
+    reversible = exec_spec("execute_close_case", RiskTier.critical, SideEffectClass.reversible)
+    assert deny.matches(irreversible, {}) is True
+    assert deny.matches(reversible, {}) is False
+
+
+def test_yaml_baseline_deny_rule_honours_side_effects():
+    """The baseline YAML pack's deny rule also distinguishes side-effect classes."""
+    pack = load_pack_model(PACKS_DIR / "baseline.yaml")
+    deny = next(r for r in pack.rules if r.name == "deny-irreversible-critical")
+    irreversible = exec_spec("execute_wire", RiskTier.critical, SideEffectClass.irreversible)
+    reversible = exec_spec("execute_close_case", RiskTier.critical, SideEffectClass.reversible)
+    assert deny.matches(irreversible, {}) is True
+    assert deny.matches(reversible, {}) is False
 
 
 def write_pack(tmp_path, text: str):

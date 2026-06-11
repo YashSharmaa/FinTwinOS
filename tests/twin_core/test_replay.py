@@ -89,3 +89,15 @@ def test_replaying_demo_episode_rebuilds_identical_twin(demo_runtime):
     assert count == len(demo_runtime.replay.episode("demo"))
     assert count > 1000
     assert snapshot_runtime(fresh)["hash"] == snapshot_runtime(demo_runtime)["hash"]
+
+
+def test_verify_replay_reports_a_match():
+    """verify_replay rebuilds the twin from its episode and confirms hash equality."""
+    from fintwinos.twin_core.replay import verify_replay
+
+    result = verify_replay(seed=7)
+    assert result["match"] is True
+    assert result["episode"] == "demo"
+    assert result["events_replayed"] > 1000
+    assert result["original_hash"] == result["rebuilt_hash"]
+    assert result["diff"]["identical"] is True

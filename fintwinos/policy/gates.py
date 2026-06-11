@@ -18,7 +18,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from fintwinos.core.types import RISK_ORDER, Decision, RiskTier, ToolBand
+from fintwinos.core.types import RISK_ORDER, Decision, RiskTier, SideEffectClass, ToolBand
 
 
 class RuleEffect(StrEnum):
@@ -34,6 +34,7 @@ class PolicyRule(BaseModel):
     bands: list[ToolBand] | None = None        # None = any band
     tools: list[str] | None = None             # glob patterns; None = any tool
     min_risk_tier: RiskTier | None = None      # rule applies at-or-above this tier
+    side_effects: list[SideEffectClass] | None = None  # None = any side-effect class
     conditions: dict[str, Any] = Field(default_factory=dict)  # equality on arguments
 
     def matches(self, spec: Any, arguments: dict[str, Any]) -> bool:
@@ -46,6 +47,8 @@ class PolicyRule(BaseModel):
         if self.min_risk_tier is not None and (
             RISK_ORDER[spec.risk_tier] < RISK_ORDER[self.min_risk_tier]
         ):
+            return False
+        if self.side_effects is not None and spec.side_effect not in self.side_effects:
             return False
         for key, expected in self.conditions.items():
             if arguments.get(key) != expected:
@@ -69,6 +72,7 @@ def default_rules() -> list[PolicyRule]:
             effect=RuleEffect.deny,
             bands=[ToolBand.execute],
             min_risk_tier=RiskTier.critical,
+            side_effects=[SideEffectClass.irreversible],
         ),
         PolicyRule(
             name="review-high-risk-proposals",

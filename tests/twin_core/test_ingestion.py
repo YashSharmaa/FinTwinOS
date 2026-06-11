@@ -31,8 +31,27 @@ def _ref(entity_type: str, entity_id: str) -> EntityRef:
 def test_routed_prefixes_cover_the_contract():
     assert set(ROUTED_PREFIXES) == {
         "customer", "account", "trade", "position", "case",
-        "alert", "policy", "market", "document",
+        "alert", "policy", "market", "document", "filing",
     }
+
+
+def test_filing_routes_to_document_store(empty_runtime):
+    """EDGAR ``filing.*`` envelopes route via the document handler (alias)."""
+    rt = empty_runtime
+    rt.ingestor.ingest(
+        EventEnvelope(
+            kind="filing.indexed",
+            source="sec_edgar",
+            entities=[EntityRef(entity_type="legal_entity", entity_id="CIK0000320193")],
+            payload={
+                "doc_id": "edgar:0000320193:0001",
+                "title": "Apple 10-K",
+                "text": "Apple Inc filed form 10-K.",
+                "metadata": {"form": "10-K"},
+            },
+        )
+    )
+    assert rt.documents.get("edgar:0000320193:0001") is not None
 
 
 def test_customer_routes_to_graph(empty_runtime):

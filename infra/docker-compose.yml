@@ -21,7 +21,9 @@ services:
     build:
       context: ..
       dockerfile: infra/Dockerfile
-    image: fintwinos/tools-server:0.1.0
+    # Canonical image, published to GHCR by .github/workflows/release.yml on
+    # every v* tag. `docker compose up --build` rebuilds it locally instead.
+    image: ghcr.io/yashsharmaa/fintwinos-tools-server:0.1.0
     container_name: fintwinos-tools-server
     # .env is optional: the stack is fully functional offline without it.
     env_file:
@@ -35,6 +37,9 @@ services:
       FINTWIN_SHADOW_MODE: "${FINTWIN_SHADOW_MODE:-1}"
       FINTWIN_ENVIRONMENT: "${FINTWIN_ENVIRONMENT:-shadow}"
       FINTWIN_DATA_DIR: /data
+      # Persist the hash-chained audit trail on the mounted volume so the
+      # chain survives container restarts and stays verifiable.
+      FINTWIN_AUDIT_PATH: /data/audit.jsonl
     ports:
       - "${FINTWIN_PORT:-8341}:8341"
     volumes:

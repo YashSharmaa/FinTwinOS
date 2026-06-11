@@ -121,6 +121,15 @@ def test_revoke_invalidates_token_immediately():
     assert bg.audit.records(action="breakglass.revoked")
 
 
+def test_revoke_rejects_role_without_permission():
+    bg = make_breakglass()
+    activation = bg.activate("ops-1", "incident-42", ttl_minutes=60)
+    bg.countersign(activation.activation_id, "risk-lead")
+    with pytest.raises(PolicyViolation, match="breakglass.revoke"):
+        bg.revoke(activation.activation_id, "intern", role="viewer")
+    assert activation.status != BreakGlassStatus.revoked
+
+
 def test_unknown_activation_raises():
     bg = make_breakglass()
     with pytest.raises(BreakGlassError, match="unknown"):

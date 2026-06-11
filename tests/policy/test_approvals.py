@@ -36,6 +36,24 @@ def test_request_creates_pending_and_audits():
     assert wf.audit.verify()
 
 
+def test_request_rejects_role_without_permission():
+    wf = make_workflow()
+    with pytest.raises(PolicyViolation, match="approval.request"):
+        wf.request(
+            "execute_post_transfer", requested_by="vince",
+            risk_tier=RiskTier.medium, role="viewer",
+        )
+    assert wf.audit.records(action="approval.blocked")
+
+
+def test_request_allows_operator_role():
+    wf = make_workflow()
+    req = wf.request(
+        "execute_post_transfer", requested_by="ops", risk_tier=RiskTier.medium, role="operator"
+    )
+    assert req.status == ApprovalStatus.pending
+
+
 def test_maker_checker_rejects_self_approval():
     wf = make_workflow()
     req = wf.request("execute_post_transfer", requested_by="alice", risk_tier=RiskTier.medium)

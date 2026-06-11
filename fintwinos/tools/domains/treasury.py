@@ -3,6 +3,9 @@
 Tools registered here:
 
 - ``observe_cash_ladder`` — projected daily cash ladder per currency with troughs.
+- ``observe_cash_forecast`` — fits the AR(p) forecaster from
+  :mod:`fintwinos.models.time_series.forecast` on a cash series from the twin's
+  timeseries store and returns the point forecast with prediction intervals.
 - ``simulate_liquidity_stress`` — runs the ``treasury`` simulator with the founding-brief
   input schema (high risk tier, provenance required, no side effects).
 - ``propose_funding_plan`` — deterministic cheapest-first funding mix for a shortfall.
@@ -19,6 +22,7 @@ from typing import Any
 
 from fintwinos.core.interfaces import TwinRuntime
 from fintwinos.core.types import RiskTier, Scenario, SideEffectClass, ToolBand, new_id, utcnow
+from fintwinos.models.time_series.forecast import ARForecaster, NaiveForecaster, backtest
 from fintwinos.tools.domains.common import (
     derive_seed,
     entities_of_type,
@@ -183,6 +187,27 @@ def _build_ladders(
     return ladders, warnings
 
 
+def _find_cash_series(runtime: TwinRuntime, currency: str) -> str | None:
+    """Locate the cash series key for one currency in the twin's timeseries store.
+
+    Prefers the canonical ``cash_ladder:<CCY>`` key written by the demo book and the
+    production ingestion path, falling back to the first (sorted, hence deterministic)
+    key whose leading tokens mention cash and whose last token is the currency code —
+    e.g. ``treasury.cash.USD``.
+    """
+    canonical = f"cash_ladder:{currency}"
+    keys = runtime.timeseries.keys()
+    if canonical in keys:
+        return canonical
+    for key in keys:
+        parts = [p.lower() for p in key.replace(":", ".").split(".")]
+        if len(parts) < 2 or parts[-1] != currency.lower():
+            continue
+        if any("cash" in part for part in parts[:-1]):
+            return key
+    return None
+
+
 def register(registry: ToolRegistry, runtime: TwinRuntime) -> None:
     """Register the treasury tool pack on the given registry against the runtime."""
 
@@ -231,6 +256,144 @@ def register(registry: ToolRegistry, runtime: TwinRuntime) -> None:
             owner=OWNER,
         ),
         observe_cash_ladder,
+    )
+
+    # -- observe_cash_forecast -------------------------------------------------------
+
+    def observe_cash_forecast(arguments: dict[str, Any], context: CallContext) -> dict[str, Any]:
+        currency = str(arguments.get("currency", "USD")).upper()
+        horizon_days = int(arguments.get("horizon_days", 7))
+        level = float(arguments.get("level", 0.95))
+        order = int(arguments.get("order", 2))
+
+        series_key = arguments.get("series_key") or _find_cash_series(runtime, currency)
+        if series_key is None:
+            available = ", ".join(runtime.timeseries.keys()) or "none"
+            raise ValueError(
+                f"no cash series found for currency '{currency}' in the twin timeseries "
+                f"store (looked for 'cash_ladder:{currency}'; available series: {available})"
+            )
+        points = runtime.timeseries.window(series_key)
+        if not points:
+            raise ValueError(f"series '{series_key}' exists but holds no observations")
+        values = [float(v) for _, v in points]
+
+        warnings: list[str] = []
+        model_name = f"ARForecaster(p={order})"
+        if len(values) >= order + 2:
+            model: ARForecaster | NaiveForecaster = ARForecaster(p=order, level=level).fit(values)
+            if model.used_ridge_:
+                warnings.append(
+                    "AR design matrix was rank-deficient or unstable; ridge fallback was used"
+                )
+        elif len(values) >= 2:
+            model = NaiveForecaster(level=level).fit(values)
+            model_name = "NaiveForecaster"
+            warnings.append(
+                f"series '{series_key}' has only {len(values)} observations "
+                f"(< {order + 2} needed for AR({order})); random-walk baseline used instead"
+            )
+        else:
+            raise ValueError(
+                f"series '{series_key}' has only {len(values)} observation(s); "
+                "at least 2 are required to forecast"
+            )
+        fc = model.forecast(horizon_days, level=level)
+        forecast_rows = [
+            {
+                "day": day + 1,
+                "mean": round(float(mean), 2),
+                "lower": round(float(lower), 2),
+                "upper": round(float(upper), 2),
+            }
+            for day, (mean, lower, upper) in enumerate(
+                zip(fc.mean, fc.lower, fc.upper, strict=True)
+            )
+        ]
+
+        # Rolling-origin backtest on a fresh model instance (refits mutate the model),
+        # reported whenever the history affords at least three evaluation origins.
+        backtest_block: dict[str, float] | None = None
+        window = max(order + 2, len(values) // 2)
+        if len(values) - window >= 3:
+            eval_model: ARForecaster | NaiveForecaster = (
+                ARForecaster(p=order, level=level)
+                if isinstance(model, ARForecaster)
+                else NaiveForecaster(level=level)
+            )
+            backtest_block = backtest(values, eval_model, window, horizon=1, level=level)
+        else:
+            warnings.append(
+                "history too short for a rolling-origin backtest; no coverage diagnostics"
+            )
+
+        return {
+            "currency": currency,
+            "series_key": series_key,
+            "as_of": points[-1][0].isoformat(),
+            "n_observations": len(values),
+            "horizon_days": horizon_days,
+            "model": model_name,
+            "level": level,
+            "last_observed": round(values[-1], 2),
+            "sigma": round(float(fc.sigma), 4),
+            "forecast": forecast_rows,
+            "backtest": backtest_block,
+            "warnings": warnings,
+            "provenance": [
+                provenance_entry(
+                    "models.time_series.forecast", f"{model_name} on series:{series_key}"
+                )
+            ],
+        }
+
+    registry.register(
+        ToolSpec(
+            name="observe_cash_forecast",
+            description=(
+                "Fit the AR(p) time-series forecaster on a cash series from the twin "
+                "(default: the cash_ladder series for one currency) and return the point "
+                "forecast with prediction intervals for the requested horizon, plus "
+                "rolling-origin backtest diagnostics. Deterministic; read-only."
+            ),
+            input_schema=object_schema(
+                {
+                    "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z]{3}$",
+                        "description": "ISO currency code of the cash series (default USD).",
+                    },
+                    "series_key": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Explicit timeseries key; overrides the currency lookup.",
+                    },
+                    "horizon_days": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 30,
+                        "description": "Forecast horizon in days (default 7).",
+                    },
+                    "level": {
+                        "type": "number",
+                        "minimum": 0.5,
+                        "maximum": 0.99,
+                        "description": "Two-sided prediction-interval level (default 0.95).",
+                    },
+                    "order": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 5,
+                        "description": "Autoregressive order p (default 2).",
+                    },
+                }
+            ),
+            band=ToolBand.observe,
+            risk_tier=RiskTier.low,
+            side_effect=SideEffectClass.read,
+            owner=OWNER,
+        ),
+        observe_cash_forecast,
     )
 
     # -- simulate_liquidity_stress ---------------------------------------------------

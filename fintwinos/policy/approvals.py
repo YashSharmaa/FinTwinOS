@@ -148,6 +148,7 @@ class ApprovalWorkflow:
         risk_tier: RiskTier | None = None,
         reason: str = "",
         scope: dict[str, Any] | None = None,
+        role: str = "analyst",
         now: datetime | None = None,
     ) -> ApprovalRequest:
         """Open a pending approval request for a tool spec, decision or subject string.
@@ -156,8 +157,20 @@ class ApprovalWorkflow:
         from the subject (``Decision.risk_tier`` / ``ToolSpec.risk_tier``),
         defaulting to ``medium``. High/critical tiers require two distinct
         approvers when ``settings.dual_control_required`` is on.
+
+        ``role`` must hold the ``approval.request`` permission (analyst and
+        operator do; viewer and approver do not — an approver opening their own
+        request would undermine maker-checker). Violations are audited and
+        raised as :class:`~fintwinos.core.errors.PolicyViolation`.
         """
         now = now or utcnow()
+        if not can(role, Action.approval_request):
+            self.audit.append(
+                requested_by,
+                "approval.blocked",
+                {"subject": str(subject), "reason": f"role '{role}' may not request approvals"},
+            )
+            raise PolicyViolation(f"role '{role}' does not hold the approval.request permission")
         subject_id, derived_tier = _resolve_subject(subject)
         tier = risk_tier or derived_tier or RiskTier.medium
         request = ApprovalRequest(
@@ -203,47 +216,52 @@ class ApprovalWorkflow:
         signature from a distinct approver). Violations are audited and raised.
         """
         now = now or utcnow()
-        request = self._get(request_id)
-        if not request.is_open:
-            raise ApprovalError(
-                f"request '{request_id}' is {request.status.value}; only pending or "
-                "escalated requests can be approved"
-            )
-        if request.expires_at is not None and now > request.expires_at:
-            request.status = ApprovalStatus.rejected
-            request.resolution = {"by": "system", "reason": "request expired", "at": now.isoformat()}
-            self.audit.append(
-                approver, "approval.expired", {"request_id": request_id, "subject": request.subject}
-            )
-            raise ApprovalError(f"request '{request_id}' expired at {request.expires_at.isoformat()}")
-        if not can(role, Action.approval_approve):
-            self._audit_blocked(approver, request, f"role '{role}' may not approve requests")
-            raise PolicyViolation(f"role '{role}' does not hold the approval.approve permission")
-        if approver == request.requested_by:
-            self._audit_blocked(approver, request, "maker-checker: requester cannot self-approve")
-            raise MakerCheckerViolation(
-                f"maker-checker violation: '{approver}' requested '{request.subject}' "
-                "and cannot approve it"
-            )
-        if approver in request.approver_names():
-            self._audit_blocked(approver, request, "dual control: approver already signed")
-            raise DualControlViolation(
-                f"dual-control violation: '{approver}' has already signed request '{request_id}'"
-            )
+        # The whole check-then-append sequence runs under the workflow lock so two
+        # concurrent calls by the same approver can never both satisfy dual control.
+        with self._lock:
+            request = self._requests.get(request_id)
+            if request is None:
+                raise ApprovalError(f"unknown approval request '{request_id}'")
+            if not request.is_open:
+                raise ApprovalError(
+                    f"request '{request_id}' is {request.status.value}; only pending or "
+                    "escalated requests can be approved"
+                )
+            if request.expires_at is not None and now > request.expires_at:
+                request.status = ApprovalStatus.rejected
+                request.resolution = {"by": "system", "reason": "request expired", "at": now.isoformat()}
+                self.audit.append(
+                    approver, "approval.expired", {"request_id": request_id, "subject": request.subject}
+                )
+                raise ApprovalError(f"request '{request_id}' expired at {request.expires_at.isoformat()}")
+            if not can(role, Action.approval_approve):
+                self._audit_blocked(approver, request, f"role '{role}' may not approve requests")
+                raise PolicyViolation(f"role '{role}' does not hold the approval.approve permission")
+            if approver == request.requested_by:
+                self._audit_blocked(approver, request, "maker-checker: requester cannot self-approve")
+                raise MakerCheckerViolation(
+                    f"maker-checker violation: '{approver}' requested '{request.subject}' "
+                    "and cannot approve it"
+                )
+            if approver in request.approver_names():
+                self._audit_blocked(approver, request, "dual control: approver already signed")
+                raise DualControlViolation(
+                    f"dual-control violation: '{approver}' has already signed request '{request_id}'"
+                )
 
-        request.approvals.append({"approver": approver, "role": role, "at": now.isoformat()})
-        self.audit.append(
-            approver,
-            "approval.approved",
-            {
-                "request_id": request_id,
-                "subject": request.subject,
-                "signatures": len(request.approvals),
-                "required": request.required_approvals,
-            },
-        )
-        if len(request.approvals) >= request.required_approvals:
-            self._grant(request, now)
+            request.approvals.append({"approver": approver, "role": role, "at": now.isoformat()})
+            self.audit.append(
+                approver,
+                "approval.approved",
+                {
+                    "request_id": request_id,
+                    "subject": request.subject,
+                    "signatures": len(request.approvals),
+                    "required": request.required_approvals,
+                },
+            )
+            if len(request.approvals) >= request.required_approvals:
+                self._grant(request, now)
         return request
 
     # -- reject / escalate --------------------------------------------------------------
@@ -341,6 +359,11 @@ class ApprovalWorkflow:
             )
             for entry in request.approvals
         ]
+        # With a deployment secret configured, minted tokens are HMAC-signed so the
+        # tool registry can refuse self-asserted tokens (e.g. pasted into JSON-RPC).
+        if self.settings.approval_secret:
+            for token in request.tokens:
+                token.sign(self.settings.approval_secret)
         request.status = ApprovalStatus.approved
         self.audit.append(
             request.approver_names()[-1],

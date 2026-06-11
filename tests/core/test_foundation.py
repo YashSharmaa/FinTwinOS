@@ -175,7 +175,8 @@ async def test_execute_blocked_without_approval_even_when_enabled():
 
 
 async def test_execute_allowed_with_approval_and_allow_rule():
-    settings = Settings(offline=True, execute_tools_enabled=True)
+    # shadow_mode off: this test exercises the real (handler-invoking) path.
+    settings = Settings(offline=True, execute_tools_enabled=True, shadow_mode=False)
     gate = PolicyGate()
     gate.add_rule(
         PolicyRule(name="allow-transfers", effect=RuleEffect.allow,
@@ -271,6 +272,19 @@ async def test_offline_llm_is_deterministic():
     r1 = await client.complete(msgs)
     r2 = await client.complete(msgs)
     assert r1.offline and r1.text == r2.text
+
+
+async def test_llm_client_accepts_audit_and_aclose_is_safe_offline():
+    from fintwinos.core.audit import AuditTrail
+
+    audit = AuditTrail()
+    client = LLMClient(settings=OFFLINE_SETTINGS, audit=audit)
+    assert client.audit is audit
+    # aclose() is a no-op offline and idempotent; the context manager mirrors it.
+    await client.aclose()
+    await client.aclose()
+    async with LLMClient(settings=OFFLINE_SETTINGS) as ctx_client:
+        assert ctx_client.offline
 
 
 async def test_offline_llm_json_mode_parses():

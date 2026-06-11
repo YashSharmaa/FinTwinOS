@@ -12,6 +12,7 @@ from fintwinos.datasets.registry import (
     DatasetEntry,
     get_dataset,
     list_datasets,
+    load_dataset,
 )
 
 EXPECTED_NAMES = {
@@ -73,7 +74,7 @@ class TestListDatasets:
         for d in listed:
             assert set(d) == {
                 "name", "description", "kind", "licence", "data_card",
-                "card_exists", "loader",
+                "card_exists", "offline_available", "loader",
             }
             assert d["card_exists"] is True
             assert d["loader"].startswith("fintwinos.datasets.")
@@ -94,6 +95,29 @@ class TestGetDataset:
     def test_unknown_lists_options(self):
         with pytest.raises(KeyError, match="known datasets"):
             get_dataset("does-not-exist")
+
+
+class TestLoadDataset:
+    def test_load_synthetic_with_defaults(self):
+        data = load_dataset("synthetic-transactions")
+        assert data is not None
+
+    def test_load_external_uses_bundled_sample_offline(self):
+        # elliptic2 needs a data_dir; offline_kwargs points it at the bundled fixture.
+        data = load_dataset("elliptic2")
+        assert data is not None
+
+    def test_load_bundled_filing_corpus(self):
+        corpus = load_dataset("edgar-filings")
+        assert isinstance(corpus, list) and len(corpus) > 0
+
+    def test_load_unknown_raises(self):
+        with pytest.raises(KeyError, match="known datasets"):
+            load_dataset("does-not-exist")
+
+    def test_every_dataset_advertises_offline_availability(self):
+        for entry in list_datasets():
+            assert entry["offline_available"] is True
 
 
 class TestSyntheticLoadersRunFromRegistry:

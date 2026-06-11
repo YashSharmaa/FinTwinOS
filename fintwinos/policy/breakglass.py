@@ -249,10 +249,23 @@ class BreakGlass:
         activation_id: str,
         actor: str,
         reason: str = "",
+        role: str = "operator",
         now: datetime | None = None,
     ) -> BreakGlassActivation:
-        """Revoke an activation early, invalidating its token immediately."""
+        """Revoke an activation early, invalidating its token immediately.
+
+        ``role`` must hold the ``breakglass.revoke`` permission (operator,
+        approver or admin); a denied role is audited and raises
+        :class:`~fintwinos.core.errors.PolicyViolation` before any state change.
+        """
         now = now or utcnow()
+        if not can(role, Action.breakglass_revoke):
+            self.audit.append(
+                actor,
+                "breakglass.blocked",
+                {"activation_id": activation_id, "reason": f"role '{role}' may not revoke"},
+            )
+            raise PolicyViolation(f"role '{role}' does not hold the breakglass.revoke permission")
         activation = self._get(activation_id)
         if activation.status in {BreakGlassStatus.revoked, BreakGlassStatus.expired}:
             raise BreakGlassError(

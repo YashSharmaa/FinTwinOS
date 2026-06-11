@@ -16,6 +16,7 @@ rules:
     effect: deny
     bands: [execute]
     min_risk_tier: critical
+    side_effects: [irreversible]
   - name: review-high-risk-proposals
     description: High and critical risk proposals are flagged for human review.
     effect: require_approval

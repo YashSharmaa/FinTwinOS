@@ -98,7 +98,14 @@ class AuditTrail:
     # -- integrity -------------------------------------------------------------
 
     def verify(self) -> bool:
-        """Walk the chain; return False on any broken link or recomputed-hash mismatch."""
+        """Walk the chain; return False on any broken link or recomputed-hash mismatch.
+
+        Detects in-place edits, insertions and deletions anywhere before the
+        current tail. It cannot, by construction, detect truncation of the
+        *tail itself* (a shortened chain is still internally consistent) —
+        deployments that need truncation evidence should anchor ``last().hash``
+        externally (e.g. ship it to a log sink or print it in run reports).
+        """
         prev = GENESIS_HASH
         for record in self._records:
             if record.prev_hash != prev:

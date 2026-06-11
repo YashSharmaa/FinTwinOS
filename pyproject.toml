@@ -24,6 +24,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Topic :: Office/Business :: Financial",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Typing :: Typed",
 ]
 dependencies = [
   "pydantic>=2.7",
@@ -49,6 +50,10 @@ dev = [
 ]
 
 [project.urls]
+Homepage = "https://github.com/YashSharmaa/FinTwinOS"
+Repository = "https://github.com/YashSharmaa/FinTwinOS"
+Issues = "https://github.com/YashSharmaa/FinTwinOS/issues"
+Changelog = "https://github.com/YashSharmaa/FinTwinOS/blob/main/CHANGELOG.md"
 Author = "https://www.linkedin.com/in/yashsharmaa/"
 
 [project.scripts]
@@ -56,6 +61,14 @@ fintwinos = "fintwinos.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["fintwinos"]
+# Ship the typing marker and runtime data files (policy packs, eval fixtures)
+# alongside the code — the offline eval and policy paths load them at runtime.
+include = [
+  "fintwinos/**/*.py",
+  "fintwinos/py.typed",
+  "fintwinos/policy/packs/*.yaml",
+  "fintwinos/evals/fixtures/*.jsonl",
+]
 
 [tool.ruff]
 line-length = 100
@@ -69,4 +82,10 @@ ignore = ["E501", "B008"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-q"
-filterwarnings = ["ignore::DeprecationWarning"]
+# Targeted third-party ignores only — first-party deprecations must stay visible.
+filterwarnings = [
+  # fastapi.testclient imports starlette.testclient, which warns that the
+  # bundled httpx-based TestClient is deprecated. Third-party, import-time,
+  # and not actionable from this codebase.
+  "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]

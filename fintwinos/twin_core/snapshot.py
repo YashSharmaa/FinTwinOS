@@ -1,12 +1,12 @@
 """Twin state snapshots: content-hashed serialisation and structural diffs.
 
 A snapshot captures the *state* of the twin — every entity with its
-attributes, every typed relationship, and per-series metadata for the time
-series store — as a plain dict with a SHA-256 content hash over its canonical
-JSON form. Two twins built from the same seed produce byte-identical hashes,
-which is the backbone of FinTwinOS's determinism guarantees: demo data
-generation, episode replay and counterfactual rebuilds are all verified by
-comparing snapshot hashes.
+attributes, every typed relationship, per-series metadata for the time series
+store, and every document's text + metadata — as a plain dict with a SHA-256
+content hash over its canonical JSON form. Two twins built from the same seed
+produce byte-identical hashes, which is the backbone of FinTwinOS's determinism
+guarantees: demo data generation, episode replay and counterfactual rebuilds
+are all verified by comparing snapshot hashes.
 
 :func:`diff_snapshots` compares two snapshots structurally, reporting added,
 removed and changed entities, relationships and series.
@@ -18,9 +18,9 @@ import hashlib
 import json
 from typing import Any
 
-from fintwinos.core.interfaces import GraphStore, TimeSeriesStore, TwinRuntime
+from fintwinos.core.interfaces import DocumentStore, GraphStore, TimeSeriesStore, TwinRuntime
 
-SNAPSHOT_VERSION = 1
+SNAPSHOT_VERSION = 2
 
 
 def _canonical_json(value: Any) -> str:
@@ -28,12 +28,18 @@ def _canonical_json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, default=str)
 
 
-def take_snapshot(graph: GraphStore, timeseries: TimeSeriesStore) -> dict[str, Any]:
-    """Serialise graph + time-series metadata into a content-hashed snapshot.
+def take_snapshot(
+    graph: GraphStore,
+    timeseries: TimeSeriesStore,
+    documents: DocumentStore | None = None,
+) -> dict[str, Any]:
+    """Serialise graph + time-series + document state into a content-hashed snapshot.
 
     The graph store must expose ``entities()`` and ``relationships()``
     enumerators (as :class:`fintwinos.twin_core.graph.NetworkXGraphStore`
-    does) in addition to the ``GraphStore`` protocol.
+    does) in addition to the ``GraphStore`` protocol. The document store is
+    optional and is included only when it exposes ``doc_ids()`` (as
+    :class:`fintwinos.twin_core.documents.TfidfDocumentStore` does).
 
     Returns a dict with:
 
@@ -41,6 +47,7 @@ def take_snapshot(graph: GraphStore, timeseries: TimeSeriesStore) -> dict[str, A
     - ``entities`` — ``{entity_key: attributes}``;
     - ``relationships`` — ``{"src|kind|dst": attributes}``;
     - ``timeseries`` — ``{series_key: {points, start, end, first, last}}``;
+    - ``documents`` — ``{doc_id: {text, metadata}}`` (empty if no store);
     - ``hash`` — SHA-256 over the canonical JSON of everything above.
     """
     entities_fn = getattr(graph, "entities", None)
@@ -76,19 +83,32 @@ def take_snapshot(graph: GraphStore, timeseries: TimeSeriesStore) -> dict[str, A
             "last": last_value,
         }
 
+    documents_meta: dict[str, Any] = {}
+    doc_ids_fn = getattr(documents, "doc_ids", None) if documents is not None else None
+    if doc_ids_fn is not None:
+        for doc_id in doc_ids_fn():
+            doc = documents.get(doc_id)  # type: ignore[union-attr]
+            if doc is None:
+                continue
+            documents_meta[str(doc_id)] = {
+                "text": doc.get("text", ""),
+                "metadata": json.loads(_canonical_json(doc.get("metadata", {}))),
+            }
+
     body = {
         "version": SNAPSHOT_VERSION,
         "entities": entities,
         "relationships": relationships,
         "timeseries": series_meta,
+        "documents": documents_meta,
     }
     content_hash = hashlib.sha256(_canonical_json(body).encode("utf-8")).hexdigest()
     return {**body, "hash": content_hash}
 
 
 def snapshot_runtime(runtime: TwinRuntime) -> dict[str, Any]:
-    """Convenience wrapper: snapshot a :class:`TwinRuntime`'s graph and series."""
-    return take_snapshot(runtime.graph, runtime.timeseries)
+    """Convenience wrapper: snapshot a :class:`TwinRuntime`'s graph, series and docs."""
+    return take_snapshot(runtime.graph, runtime.timeseries, runtime.documents)
 
 
 def _diff_keyed(old: dict[str, Any], new: dict[str, Any]) -> dict[str, list[str]]:
@@ -117,5 +137,6 @@ def diff_snapshots(old: dict[str, Any], new: dict[str, Any]) -> dict[str, Any]:
         "entities": _diff_keyed(old.get("entities", {}), new.get("entities", {})),
         "relationships": _diff_keyed(old.get("relationships", {}), new.get("relationships", {})),
         "timeseries": _diff_keyed(old.get("timeseries", {}), new.get("timeseries", {})),
+        "documents": _diff_keyed(old.get("documents", {}), new.get("documents", {})),
         "identical": bool(old.get("hash")) and old.get("hash") == new.get("hash"),
     }

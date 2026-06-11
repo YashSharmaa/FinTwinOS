@@ -50,6 +50,7 @@ def world(tmp_path):
         data_dir=tmp_path,
         execute_tools_enabled=True,
         dual_control_required=True,
+        shadow_mode=False,  # this test exercises the real (handler-invoking) path
     )
     audit = AuditTrail()
     # ToolRegistry uses `audit or AuditTrail()` and AuditTrail defines __len__, so an

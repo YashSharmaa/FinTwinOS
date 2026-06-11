@@ -128,9 +128,9 @@ async def handle_case(
     ``case_id`` and ``audit_len``.
     """
     settings = registry.settings
-    llm = llm or LLMClient(settings=settings)
-    blackboard = blackboard or Blackboard()
     audit = runtime.audit if runtime is not None else registry.audit
+    llm = llm or LLMClient(settings=settings, audit=audit)
+    blackboard = blackboard or Blackboard()
     ctx = AgentContext(
         runtime=runtime,
         registry=registry,

@@ -51,7 +51,7 @@ from pydantic import BaseModel, field_validator
 from pydantic import ValidationError as PydanticValidationError
 
 from fintwinos.core.errors import FinTwinError
-from fintwinos.core.types import RISK_ORDER, RiskTier, ToolBand
+from fintwinos.core.types import RISK_ORDER, RiskTier, SideEffectClass, ToolBand
 from fintwinos.policy.gates import PolicyGate, PolicyRule
 
 #: Directory holding the policy packs shipped with FinTwinOS.
@@ -81,6 +81,11 @@ _RULE_SCHEMA: dict[str, Any] = {
             "items": {"type": "string", "minLength": 1},
         },
         "min_risk_tier": {"enum": [tier.value for tier in RiskTier]},
+        "side_effects": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"enum": [se.value for se in SideEffectClass]},
+        },
         "conditions": {"type": "object"},
     },
 }
@@ -196,6 +201,8 @@ class YamlRule(PolicyRule):
         if self.min_risk_tier is not None and (
             RISK_ORDER[spec.risk_tier] < RISK_ORDER[self.min_risk_tier]
         ):
+            return False
+        if self.side_effects is not None and spec.side_effect not in self.side_effects:
             return False
         for field_path, operators in self.conditions.items():
             actual = _lookup_argument(arguments, field_path)

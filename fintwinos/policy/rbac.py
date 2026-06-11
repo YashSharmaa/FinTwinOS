@@ -6,12 +6,13 @@ Five roles cover the personas around a financial digital twin:
 - ``analyst``   — investigates: observe, simulate and propose; may request
   approvals and escalate them, but can neither approve nor execute.
 - ``approver``  — the checker in maker-checker: approves, rejects and
-  escalates approval requests and countersigns break-glass activations;
-  deliberately *cannot* execute, so no single person both approves and acts.
+  escalates approval requests, countersigns break-glass activations and may
+  revoke them; deliberately *cannot* execute, so no single person both
+  approves and acts.
 - ``operator``  — runs the platform: all four tool bands, requests approvals,
-  activates break-glass and engages the kill switch. Cannot approve their own
-  requests (maker-checker is enforced by the approval workflow) and cannot
-  release an engaged kill switch — that is reserved for ``admin``.
+  activates and revokes break-glass and engages the kill switch. Cannot approve
+  their own requests (maker-checker is enforced by the approval workflow) and
+  cannot release an engaged kill switch — that is reserved for ``admin``.
 - ``admin``     — every action, including kill-switch release.
 
 The matrix is exposed two ways: :func:`can` for point checks, and
@@ -56,6 +57,7 @@ class Action(StrEnum):
     approval_escalate = "approval.escalate"
     breakglass_activate = "breakglass.activate"
     breakglass_countersign = "breakglass.countersign"
+    breakglass_revoke = "breakglass.revoke"
     killswitch_engage = "killswitch.engage"
     killswitch_release = "killswitch.release"
 
@@ -80,6 +82,7 @@ PERMISSIONS: dict[Role, frozenset[Action]] = {
             Action.approval_reject,
             Action.approval_escalate,
             Action.breakglass_countersign,
+            Action.breakglass_revoke,
         }
     ),
     Role.operator: frozenset(
@@ -91,6 +94,7 @@ PERMISSIONS: dict[Role, frozenset[Action]] = {
             Action.approval_request,
             Action.approval_escalate,
             Action.breakglass_activate,
+            Action.breakglass_revoke,
             Action.killswitch_engage,
         }
     ),

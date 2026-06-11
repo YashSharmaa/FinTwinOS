@@ -8,6 +8,7 @@ the twin stores canonical entities, tools return ``ToolResult``s, simulators ret
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import uuid
 from datetime import UTC, datetime
@@ -282,7 +283,14 @@ class ToolResult(BaseModel):
 
 
 class ApprovalToken(BaseModel):
-    """A human (or dual-control pair) granting permission for a specific action."""
+    """A human (or dual-control pair) granting permission for a specific action.
+
+    When ``FINTWIN_APPROVAL_SECRET`` is configured, tokens minted by the
+    :class:`~fintwinos.policy.approvals.ApprovalWorkflow` carry an HMAC-SHA256
+    ``signature`` over the token's identity fields, and the tool registry
+    refuses unsigned or tampered tokens — a token pasted into a JSON-RPC
+    request cannot be forged without the deployment secret.
+    """
 
     token_id: str = Field(default_factory=lambda: new_id("apr"))
     subject: str  # tool name or decision_id the approval covers
@@ -292,6 +300,38 @@ class ApprovalToken(BaseModel):
     granted_at: datetime = Field(default_factory=utcnow)
     expires_at: datetime | None = None
     scope: dict[str, Any] = Field(default_factory=dict)
+    signature: str | None = None
+
+    def signing_payload(self) -> str:
+        """Canonical string covered by the HMAC signature."""
+        return json.dumps(
+            {
+                "token_id": self.token_id,
+                "subject": self.subject,
+                "granted_by": self.granted_by,
+                "role": self.role,
+                "status": self.status.value,
+                "granted_at": self.granted_at.isoformat(),
+                "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            },
+            sort_keys=True,
+        )
+
+    def sign(self, secret: str) -> ApprovalToken:
+        """Attach an HMAC-SHA256 signature; returns self for chaining."""
+        self.signature = hmac.new(
+            secret.encode("utf-8"), self.signing_payload().encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+        return self
+
+    def verify_signature(self, secret: str) -> bool:
+        """True only if the signature matches this token's fields under ``secret``."""
+        if not self.signature:
+            return False
+        expected = hmac.new(
+            secret.encode("utf-8"), self.signing_payload().encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+        return hmac.compare_digest(self.signature, expected)
 
     def is_valid_for(self, subject: str, now: datetime | None = None) -> bool:
         now = now or utcnow()

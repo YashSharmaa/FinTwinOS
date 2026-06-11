@@ -5,6 +5,9 @@ Tools registered here:
 - ``observe_positions`` — positions enriched with instrument asset class / currency.
 - ``observe_exposures`` — gross/net/long/short aggregates by asset class and currency.
 - ``observe_limit_utilisation`` — limit entities measured against live exposures.
+- ``observe_market_regime`` — runs the rolling z-score regime detector from
+  :mod:`fintwinos.models.time_series.regime` on a price series from the twin's
+  timeseries store and reports regime labels, change points and diagnostics.
 - ``simulate_market_shock`` — runs the ``market`` simulator for a stress scenario.
 - ``propose_hedge_candidates`` — deterministic ranking of hedge instruments by
   exposure reduction per unit of cost.
@@ -17,8 +20,11 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
+
 from fintwinos.core.interfaces import TwinRuntime
 from fintwinos.core.types import EntityRef, RiskTier, Scenario, SideEffectClass, ToolBand
+from fintwinos.models.time_series.regime import RegimeDetector
 from fintwinos.tools.domains.common import (
     derive_seed,
     entities_of_type,
@@ -340,6 +346,150 @@ def register(registry: ToolRegistry, runtime: TwinRuntime) -> None:
             owner=OWNER,
         ),
         observe_limit_utilisation,
+    )
+
+    # -- observe_market_regime ----------------------------------------------------
+
+    def observe_market_regime(
+        arguments: dict[str, Any], context: CallContext
+    ) -> dict[str, Any]:
+        series_key = arguments.get("series_key")
+        if not series_key:
+            instrument_id = arguments.get("instrument_id")
+            if instrument_id:
+                series_key = f"price:{instrument_id}"
+            else:
+                price_keys = [k for k in runtime.timeseries.keys() if k.startswith("price:")]
+                if not price_keys:
+                    return {
+                        "series_key": None,
+                        "available_series": [],
+                        "regime": None,
+                        "note": "no 'price:*' series in the twin time-series store",
+                        "provenance": [provenance_entry("twin_core.timeseries", "price:*")],
+                    }
+                series_key = price_keys[0]
+
+        points = runtime.timeseries.window(str(series_key))
+        timestamps = [ts for ts, _ in points]
+        values = np.asarray([v for _, v in points], dtype=np.float64)
+
+        signal = arguments.get("on", "abs_returns")
+        if signal in {"returns", "abs_returns"} and values.size >= 2:
+            prev = values[:-1]
+            returns = np.divide(
+                np.diff(values), prev, out=np.zeros(values.size - 1), where=prev != 0.0
+            )
+            trigger = np.abs(returns) if signal == "abs_returns" else returns
+            trigger_ts = timestamps[1:]
+        else:
+            signal = "price"
+            trigger = values
+            trigger_ts = timestamps
+
+        window = int(arguments.get("window", 20))
+        enter_z = float(arguments.get("enter_z", 3.0))
+        exit_z = float(arguments.get("exit_z", 1.0))
+
+        if trigger.size <= window:
+            return {
+                "series_key": series_key,
+                "signal": signal,
+                "n_points": int(trigger.size),
+                "window": window,
+                "regime": None,
+                "note": (
+                    f"series too short for regime detection: need > {window} points "
+                    f"on the '{signal}' signal, have {int(trigger.size)}"
+                ),
+                "provenance": [provenance_entry("twin_core.timeseries", str(series_key))],
+            }
+
+        detector = RegimeDetector(window=window, enter_z=enter_z, exit_z=exit_z)
+        result = detector.detect(trigger)
+        labels = result.labels
+        change_points = [
+            {
+                "index": int(cp),
+                "at": trigger_ts[cp].isoformat() if cp < len(trigger_ts) else None,
+                "to_regime": "stressed" if int(labels[cp]) == 1 else "calm",
+                "zscore": round(float(result.zscores[cp]), 4),
+            }
+            for cp in result.change_points
+        ]
+        segments = [
+            {
+                "start": int(start),
+                "end": int(end),
+                "length": int(end - start),
+                "regime": "stressed" if label == 1 else "calm",
+            }
+            for start, end, label in result.segments()
+        ]
+        return {
+            "series_key": series_key,
+            "signal": signal,
+            "n_points": int(trigger.size),
+            "window": window,
+            "enter_z": enter_z,
+            "exit_z": exit_z,
+            "current_regime": "stressed" if int(labels[-1]) == 1 else "calm",
+            "stressed_fraction": round(float(labels.sum()) / labels.size, 4),
+            "n_change_points": len(change_points),
+            "change_points": change_points,
+            "segments": segments,
+            "latest_zscore": round(float(result.zscores[-1]), 4),
+            "provenance": [provenance_entry("twin_core.timeseries", str(series_key))],
+        }
+
+    registry.register(
+        ToolSpec(
+            name="observe_market_regime",
+            description=(
+                "Detect calm/stressed market regimes on a twin price series using a "
+                "rolling z-score detector with two-state hysteresis. By default it runs "
+                "on absolute returns (a volatility proxy) and reports the current "
+                "regime, regime change points and a per-segment breakdown. Read-only."
+            ),
+            input_schema=object_schema(
+                {
+                    "instrument_id": {
+                        "type": "string",
+                        "description": "Instrument whose 'price:<id>' series to analyse.",
+                    },
+                    "series_key": {
+                        "type": "string",
+                        "description": "Explicit time-series key (overrides instrument_id).",
+                    },
+                    "on": {
+                        "type": "string",
+                        "enum": ["price", "returns", "abs_returns"],
+                        "description": "Signal to detect on (default 'abs_returns').",
+                    },
+                    "window": {
+                        "type": "integer",
+                        "minimum": 2,
+                        "maximum": 250,
+                        "description": "Rolling window length for the z-score (default 20).",
+                    },
+                    "enter_z": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Calm->stressed z-score threshold (default 3.0).",
+                    },
+                    "exit_z": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Stressed->calm z-score threshold (default 1.0).",
+                    },
+                }
+            ),
+            band=ToolBand.observe,
+            risk_tier=RiskTier.low,
+            side_effect=SideEffectClass.read,
+            owner=OWNER,
+        ),
+        observe_market_regime,
     )
 
     # -- simulate_market_shock ----------------------------------------------------

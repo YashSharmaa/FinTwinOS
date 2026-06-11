@@ -8,8 +8,10 @@
 
 replicaCount: 1
 
+# Canonical image, published to GHCR by .github/workflows/release.yml on
+# every v* tag. The tag default tracks the chart appVersion.
 image:
-  repository: fintwinos/tools-server
+  repository: ghcr.io/yashsharmaa/fintwinos-tools-server
   tag: "0.1.0"
   pullPolicy: IfNotPresent
 
@@ -34,6 +36,9 @@ env:
   FINTWIN_SHADOW_MODE: "1"
   FINTWIN_SEED: "7"
   FINTWIN_DATA_DIR: "/data"
+  # Persist the hash-chained audit trail on the /data volume; pair with
+  # persistence.existingClaim so the chain survives pod restarts.
+  FINTWIN_AUDIT_PATH: "/data/audit.jsonl"
 
 # Reference to an existing Secret carrying the OpenAI key. The chart never
 # creates secrets itself — provision them with your secret manager, e.g.:
