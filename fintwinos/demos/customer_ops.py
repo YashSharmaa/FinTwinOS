@@ -1,4 +1,4 @@
-"""Demo: complaints spike — staffing counterfactual and a propose-only fix.
+"""Demo: complaints spike, staffing counterfactual and a propose-only fix.
 
 Flow: observe the live queue state through the registry → rehearse the spike
 on the calibrated customer-operations simulator (a contracted ``twin_sim``
@@ -75,8 +75,8 @@ async def arun(
         console,
         "Complaints spike",
         f"Complaint volume is running at {ARRIVAL_RATE_PER_HR:.0f}/hr (+60%). Rehearse the "
-        f"queue at current staffing and with +{EXTRA_AGENTS} handlers, then propose — never "
-        "execute — the fix.",
+        f"queue at current staffing and with +{EXTRA_AGENTS} handlers, then propose, never "
+        "execute, the fix.",
         stack.settings,
     )
 
@@ -138,7 +138,7 @@ async def _draft_customer_note(
     counterfactual: dict[str, Any],
     warnings: list[str],
 ) -> dict[str, Any]:
-    """Draft a compliant customer holding note — deterministic text, LLM-polished online.
+    """Draft a compliant customer holding note, deterministic text, LLM-polished online.
 
     The LLM is enrichment only: any API failure degrades to the rule-based
     draft with a recorded warning, never a crash.
@@ -218,7 +218,7 @@ def _simulate_queue(
             result = simulator.run(scenario, seed=seed)
             sim = extract_simulation(result)
             source = f"runtime.simulators['{simulator.name}']"
-        except Exception as exc:  # noqa: BLE001 — degrade to the bundled model
+        except Exception as exc:  # noqa: BLE001, degrade to the bundled model
             warnings.append(f"queue simulator failed ({exc}); using bundled fluid model")
     else:
         warnings.append("no queue simulator registered; using bundled fluid-queue model")
@@ -286,7 +286,7 @@ def _sla_breach_table(
 
 def _render_sla_table(console: Console, rows: list[dict[str, Any]]) -> None:
     table = Table(
-        title=f"Complaints queue under the spike — baseline ({BASELINE_AGENTS} agents) vs "
+        title=f"Complaints queue under the spike, baseline ({BASELINE_AGENTS} agents) vs "
         f"+{EXTRA_AGENTS}",
         title_justify="left",
         border_style="blue",
@@ -300,7 +300,7 @@ def _render_sla_table(console: Console, rows: list[dict[str, Any]]) -> None:
         fmt = fmt_pct if is_rate else fmt_num
         delta = row["delta"]
         if delta is None:
-            delta_cell = "—"
+            delta_cell = "-"
         else:
             style = "green" if delta <= 0 else "red"
             delta_cell = f"[{style}]{fmt(delta)}[/{style}]"

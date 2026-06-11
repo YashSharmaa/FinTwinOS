@@ -157,7 +157,7 @@ async def arun(
         console,
         "Filings research",
         "Load the filing corpus, retrieve risk factors, and ship a brief where every "
-        "claim is pinned to document ids — then let the critic try to break it.",
+        "claim is pinned to document ids, then let the critic try to break it.",
         stack.settings,
     )
 
@@ -283,7 +283,7 @@ def _render_hits(console: Console, hits: list[dict[str, Any]], stack: DemoStack)
         table.add_row(
             hit["doc_id"],
             f"{hit['score']:.3f}",
-            f"{meta.get('issuer', '—')} · {meta.get('section', '—')}",
+            f"{meta.get('issuer', '-')} · {meta.get('section', '-')}",
         )
     console.print(table)
 
@@ -343,7 +343,7 @@ def _render_brief(console: Console, brief: list[dict[str, Any]]) -> None:
     console.print(
         Panel(
             "\n\n".join(lines),
-            title="[bold]Research brief — every claim cited[/bold]",
+            title="[bold]Research brief, every claim cited[/bold]",
             border_style="green",
         )
     )
@@ -385,7 +385,7 @@ async def _critic_pass(stack: DemoStack, brief: list[dict[str, Any]]) -> dict[st
 def _render_critic(console: Console, critic: dict[str, Any]) -> None:
     verdict = "[green]PASSED[/green]" if critic["passed"] else "[red]CHALLENGED[/red]"
     table = Table(
-        title=f"Critic pass — {verdict} · grounding coverage {critic['coverage']:.0%}",
+        title=f"Critic pass, {verdict} · grounding coverage {critic['coverage']:.0%}",
         title_justify="left",
         border_style="magenta",
     )
@@ -399,7 +399,7 @@ def _render_critic(console: Console, critic: dict[str, Any]) -> None:
                 challenge["topic"], f"[{style}]{challenge['severity']}[/{style}]", challenge["issue"]
             )
     else:
-        table.add_row("—", "[green]none[/green]", "no challenges raised")
+        table.add_row("-", "[green]none[/green]", "no challenges raised")
     console.print(table)
     console.print(Panel(critic["commentary"], title="[dim]critic commentary[/dim]", border_style="dim"))
 

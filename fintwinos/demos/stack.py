@@ -8,7 +8,7 @@ than at import time.
 
 The helpers here are deliberately defensive: demos discover tools by name
 pattern, adapt arguments to each tool's published JSON Schema, and normalise
-simulator payloads — so the demos stay working as the catalog evolves, and any
+simulator payloads, so the demos stay working as the catalog evolves, and any
 gap degrades into a recorded warning instead of a crash.
 """
 
@@ -151,8 +151,8 @@ def schema_args(spec: ToolSpec, preferred: dict[str, Any]) -> dict[str, Any]:
     """Adapt preferred arguments to a tool's published input schema.
 
     Keeps only keys the schema declares (when it declares any), then fills
-    required properties the caller did not provide — by conventional name
-    first, then by JSON type — so schema validation never rejects a demo call
+    required properties the caller did not provide, by conventional name
+    first, then by JSON type, so schema validation never rejects a demo call
     over an argument-name mismatch.
     """
     schema = spec.input_schema or {}
@@ -339,8 +339,8 @@ def tool_calls_by_band(audit: AuditTrail) -> dict[str, int]:
 def mode_line(settings: Settings) -> str:
     """Human-readable runtime mode for panel subtitles."""
     if settings.offline:
-        return "offline — deterministic rule-based fallbacks, no network"
-    return f"online — OpenAI ({settings.llm_model_primary} / {settings.llm_model_fast})"
+        return "offline, deterministic rule-based fallbacks, no network"
+    return f"online, OpenAI ({settings.llm_model_primary} / {settings.llm_model_fast})"
 
 
 def render_header(console: Console, title: str, tagline: str, settings: Settings) -> None:
@@ -368,11 +368,11 @@ def render_case(console: Console, case: dict[str, Any], title: str = "Agent deci
 
     lines = [f"status: [{status_style}]{status}[/{status_style}]"]
     if isinstance(decision, dict) and decision:
-        lines.append(f"objective: {decision.get('objective', '—')}")
+        lines.append(f"objective: {decision.get('objective', '-')}")
         lines.append(
-            f"action_type: [bold]{decision.get('action_type', '—')}[/bold]   "
-            f"risk_tier: {decision.get('risk_tier', '—')}   "
-            f"owner: {decision.get('owner', '—')}"
+            f"action_type: [bold]{decision.get('action_type', '-')}[/bold]   "
+            f"risk_tier: {decision.get('risk_tier', '-')}   "
+            f"owner: {decision.get('owner', '-')}"
         )
         rationale = str(decision.get("rationale", "")).strip()
         if rationale:
@@ -412,19 +412,19 @@ def render_audit_excerpt(
 def fmt_num(value: Any, digits: int = 2) -> str:
     """Format a possibly-missing number for table cells."""
     if value is None:
-        return "—"
+        return "-"
     return f"{float(value):,.{digits}f}"
 
 
 def fmt_pct(value: Any, digits: int = 1) -> str:
     """Format a possibly-missing ratio as a percentage."""
     if value is None:
-        return "—"
+        return "-"
     return f"{float(value) * 100:.{digits}f}%"
 
 
 def fmt_ci(bounds: list[float] | None, digits: int = 1) -> str:
     """Format a two-sided confidence interval."""
     if not bounds or len(bounds) != 2:
-        return "—"
+        return "-"
     return f"[{float(bounds[0]):.{digits}f}, {float(bounds[1]):.{digits}f}]"

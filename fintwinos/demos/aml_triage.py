@@ -1,4 +1,4 @@
-"""Demo: AML ring surge — triage, narrative, and a governed case closure.
+"""Demo: AML ring surge, triage, narrative, and a governed case closure.
 
 Flow: run the compliance simulator for a laundering-ring surge → score the
 alert queue with the AML scorer (preferring ``fintwinos.models.graph``,
@@ -6,7 +6,7 @@ trained on synthetic labelled data) → show the precision/recall trade-off of
 different triage depths → draft a case narrative for the top alert via
 ``propose_case_narrative`` → then demonstrate *both* sides of the execute
 band: ``execute_close_case`` is refused without a human approval, and goes
-through — writing to the local outbox — once an :class:`ApprovalToken` is
+through, writing to the local outbox, once an :class:`ApprovalToken` is
 granted, the policy pack carries an explicit allow rule, and
 ``execute_tools_enabled`` is switched on.
 
@@ -86,7 +86,7 @@ async def arun(
         console,
         "AML ring surge",
         "A laundering ring lights up the alert queue. Triage it with a trained scorer, "
-        "draft the case narrative, then close the case — but only with a human approval.",
+        "draft the case narrative, then close the case, but only with a human approval.",
         stack.settings,
     )
 
@@ -230,10 +230,10 @@ async def _run_surge(
 def _render_queue(
     console: Console, alerts: list[dict[str, Any]], scores: np.ndarray, labels: np.ndarray
 ) -> None:
-    """Show the top of the scored queue (ground truth included — it's a rehearsal)."""
+    """Show the top of the scored queue (ground truth included, it's a rehearsal)."""
     order = np.argsort(-scores, kind="stable")
     table = Table(
-        title=f"Scored alert queue — top 8 of {len(alerts)}",
+        title=f"Scored alert queue, top 8 of {len(alerts)}",
         title_justify="left",
         border_style="yellow",
     )
@@ -265,7 +265,7 @@ def _render_triage(
 ) -> None:
     """Precision/recall trade-off table for the triage depth decision."""
     table = Table(
-        title=f"Triage depth trade-off — scorer: {scorer_source} (AUC {auc:.3f})",
+        title=f"Triage depth trade-off, scorer: {scorer_source} (AUC {auc:.3f})",
         title_justify="left",
         border_style="yellow",
     )
@@ -424,7 +424,7 @@ async def _close_case_flow(
         )
         console.print(
             Panel(
-                f"[red]refused[/red] — {refused.error}\n"
+                f"[red]refused[/red], {refused.error}\n"
                 f"requires_approval={refused.requires_approval}",
                 title="[bold]execute_close_case · attempt without approval[/bold]",
                 border_style="red",
@@ -434,7 +434,7 @@ async def _close_case_flow(
         # --- Branch 2: allow rule + maker-checker approvals + execute switch. -----
         # The token is minted through the real ApprovalWorkflow: the requester can
         # never self-approve, and the high-risk tier needs two distinct approvers
-        # under dual control — exactly what an adopting institution would run.
+        # under dual control, exactly what an adopting institution would run.
         ensure_allow_rule(stack.registry.policy_gate, CLOSE_TOOL, "demo-allow-close-case")
         stack.registry.settings.execute_tools_enabled = True
         stack.registry.settings.shadow_mode = False
@@ -465,7 +465,7 @@ async def _close_case_flow(
 
     outbox_dir = Path(stack.settings.data_dir) / "outbox"
     outbox_files = sorted(str(p) for p in outbox_dir.glob("*")) if outbox_dir.exists() else []
-    status = "[green]executed[/green]" if approved.ok else f"[red]failed[/red] — {approved.error}"
+    status = "[green]executed[/green]" if approved.ok else f"[red]failed[/red], {approved.error}"
     console.print(
         Panel(
             f"{status}\napproval: {token.token_id} granted by {token.granted_by} ({token.role})\n"
@@ -499,7 +499,7 @@ def _register_demo_close_tool(stack: DemoStack) -> None:
 
     Registered only when the platform catalog does not already provide the
     tool, and obeys every execute-band invariant: declared side effect, human
-    approval required, and writes land in ``settings.data_dir / "outbox"`` —
+    approval required, and writes land in ``settings.data_dir / "outbox"`` -
     never in a real system.
     """
     settings = stack.settings

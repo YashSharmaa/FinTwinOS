@@ -4,8 +4,8 @@ Every demo must run end-to-end with ``FINTWIN_OFFLINE=1``, no OpenAI key and no
 network. When the federated twin exposes the corresponding simulator or model the
 demos prefer it; when a capability is missing (for example in a partial install)
 these fallbacks keep the demo honest: they produce the same shapes the platform
-contracts require — ``SimulationResult`` with confidence intervals and a
-calibration block — using stylised but defensible financial models.
+contracts require, ``SimulationResult`` with confidence intervals and a
+calibration block, using stylised but defensible financial models.
 
 All randomness flows through ``numpy.random.default_rng(seed)`` so every run is
 exactly reproducible.
@@ -301,7 +301,7 @@ def make_alert_population(
 def coerce_alert_queue(
     data: Any,
 ) -> tuple[list[dict[str, Any]], np.ndarray, np.ndarray] | None:
-    """Adapt a simulator payload into ``(alerts, X, y)`` if — and only if — it
+    """Adapt a simulator payload into ``(alerts, X, y)`` if, and only if, it
     carries the full canonical feature set *and* ground-truth labels.
 
     Anything less and the demo falls back to its own labelled population, so

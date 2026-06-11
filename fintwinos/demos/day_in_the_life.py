@@ -3,12 +3,12 @@
 Composes the four scenario demos morning-to-evening on a **single** runtime,
 registry, LLM client and hash-chained audit trail:
 
-* 09:10 — Treasury rehearses a USD liquidity squeeze.
-* 11:25 — Financial crime triages an AML ring surge and closes a case under
+* 09:10, Treasury rehearses a USD liquidity squeeze.
+* 11:25, Financial crime triages an AML ring surge and closes a case under
   dual control.
-* 14:00 — Research ships a fully cited filings brief past the critic.
-* 16:40 — Customer operations rehearses the complaints spike counterfactual.
-* 18:05 — Close of day: governance roll-up — tool calls by band, audit chain
+* 14:00, Research ships a fully cited filings brief past the critic.
+* 16:40, Customer operations rehearses the complaints spike counterfactual.
+* 18:05, Close of day: governance roll-up, tool calls by band, audit chain
   length and integrity verdict, LLM usage and indicative cost.
 
 Run with ``fintwinos demo day_in_the_life``. Fully offline-capable.
@@ -35,10 +35,10 @@ from fintwinos.demos.stack import (
 
 #: The day's schedule: (clock, section key, headline, demo module).
 SCHEDULE = [
-    ("09:10", "liquidity", "Treasury — USD liquidity squeeze", liquidity),
-    ("11:25", "aml_triage", "Financial crime — AML ring surge", aml_triage),
-    ("14:00", "analyst_research", "Research — filings brief with citations", analyst_research),
-    ("16:40", "customer_ops", "Customer operations — complaints spike", customer_ops),
+    ("09:10", "liquidity", "Treasury, USD liquidity squeeze", liquidity),
+    ("11:25", "aml_triage", "Financial crime, AML ring surge", aml_triage),
+    ("14:00", "analyst_research", "Research, filings brief with citations", analyst_research),
+    ("16:40", "customer_ops", "Customer operations, complaints spike", customer_ops),
 ]
 
 
@@ -53,7 +53,7 @@ async def arun(
     stack = stack or build_stack(seed=seed, console=console, offline_ok=offline_ok, settings=settings)
     console = console or stack.console
 
-    console.rule("[bold cyan]FinTwinOS — a day in the life[/bold cyan]")
+    console.rule("[bold cyan]FinTwinOS, a day in the life[/bold cyan]")
     console.print(
         Panel(
             "One institution, one twin, one tamper-evident audit trail. Four desks "
@@ -72,7 +72,7 @@ async def arun(
         sections[key] = result
         section_warnings.extend(f"{key}: {w}" for w in result.get("warnings", []))
 
-    console.rule("[bold]18:05 · Close of day — governance[/bold]")
+    console.rule("[bold]18:05 · Close of day, governance[/bold]")
     governance = _governance_summary(stack)
     _render_governance(console, stack, governance)
 
@@ -119,12 +119,12 @@ def _render_governance(console: Console, stack: DemoStack, governance: dict[str,
             table.add_row(band, str(bands[band]), posture[band])
     for band, count in bands.items():
         if band not in posture:
-            table.add_row(band, str(count), "—")
+            table.add_row(band, str(count), "-")
     console.print(table)
 
     verified = governance["audit_verified"]
     chain_line = (
-        "[green]✓ intact[/green]" if verified else "[red]✗ BROKEN — investigate[/red]"
+        "[green]✓ intact[/green]" if verified else "[red]✗ BROKEN, investigate[/red]"
     )
     usage = governance["llm_usage"]
     usage_line = (
@@ -135,7 +135,7 @@ def _render_governance(console: Console, stack: DemoStack, governance: dict[str,
     )
     console.print(
         Panel(
-            f"audit chain: {governance['audit_records']} hash-linked records — {chain_line}\n"
+            f"audit chain: {governance['audit_records']} hash-linked records, {chain_line}\n"
             f"LLM usage: {usage_line}",
             title="[bold]Governance close of day[/bold]",
             border_style="green" if verified else "red",

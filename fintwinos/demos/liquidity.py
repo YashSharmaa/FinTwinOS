@@ -93,7 +93,7 @@ async def arun(
         console,
         "USD liquidity squeeze",
         "A squeeze is unfolding in the twin's cash ladder. Observe it, stress it under "
-        "two presets, and rehearse the contingency-funding decision — all audited.",
+        "two presets, and rehearse the contingency-funding decision, all audited.",
         stack.settings,
     )
 
@@ -198,7 +198,7 @@ async def _observe_cash_ladder(
         net = row.get("net")
         net_style = "red" if isinstance(net, int | float) and net < 0 else "green"
         table.add_row(
-            str(row.get("day", "—")),
+            str(row.get("day", "-")),
             fmt_num(row.get("inflows")),
             fmt_num(row.get("outflows")),
             f"[{net_style}]{fmt_num(net)}[/{net_style}]",
@@ -309,7 +309,7 @@ async def _run_stress_presets(
         }
 
     table = Table(
-        title="Liquidity stress — survival horizon", title_justify="left", border_style="red"
+        title="Liquidity stress, survival horizon", title_justify="left", border_style="red"
     )
     table.add_column("preset", style="bold")
     table.add_column("survival days (p50)", justify="right")
@@ -319,7 +319,7 @@ async def _run_stress_presets(
     for name, row in stress.items():
         cost = row["peak_funding_cost_bps"]
         cost_cell = f"{cost:,.0f} bps" if cost is not None else (
-            f"breach p={row['breach_probability']:.0%}" if row["breach_probability"] is not None else "—"
+            f"breach p={row['breach_probability']:.0%}" if row["breach_probability"] is not None else "-"
         )
         table.add_row(
             name,
@@ -341,7 +341,7 @@ async def _handle_liquidity_case(stack: DemoStack, warnings: list[str]) -> dict[
             handle_case(CASE_ID, OBJECTIVE, stack.runtime, stack.registry, stack.llm)
         )
         return normalize_case(raw)
-    except Exception as exc:  # noqa: BLE001 — a demo must degrade, never crash
+    except Exception as exc:  # noqa: BLE001, a demo must degrade, never crash
         warnings.append(f"agents.runtime.handle_case unavailable ({exc}); using fallback planner")
         return _fallback_case(stack)
 

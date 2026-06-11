@@ -2,8 +2,8 @@
 
 The analyst-research demo prefers a corpus shipped by the data/connector
 modules (probed via :func:`resolve_filing_corpus`); when none is available it
-falls back to the bundled corpus below — fictional issuers, realistic Item 1A
-risk-factor prose — so the demo and its citations work in any install.
+falls back to the bundled corpus below, fictional issuers, realistic Item 1A
+risk-factor prose, so the demo and its citations work in any install.
 """
 
 from __future__ import annotations
@@ -149,7 +149,7 @@ def _doc(doc_id: str, issuer: str, topic: str, text: str) -> dict[str, Any]:
         "metadata": {
             "issuer": issuer,
             "form": "10-K",
-            "section": "Item 1A — Risk Factors",
+            "section": "Item 1A, Risk Factors",
             "fiscal_year": 2025,
             "topic": topic,
             "synthetic": True,

@@ -1,9 +1,9 @@
-"""Packaged end-to-end demonstrations — the front door of FinTwinOS.
+"""Packaged end-to-end demonstrations, the front door of FinTwinOS.
 
 Every demo module exposes two entry points:
 
-* ``main()`` — the contracted CLI hook (``fintwinos demo <name>``);
-* ``run(offline_ok=True, console=None, seed=7, settings=None) -> dict`` —
+* ``main()``, the contracted CLI hook (``fintwinos demo <name>``);
+* ``run(offline_ok=True, console=None, seed=7, settings=None) -> dict`` -
   programmatic execution returning structured results that tests (and your
   own scripts) can assert on.
 
