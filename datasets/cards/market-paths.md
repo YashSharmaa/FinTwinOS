@@ -1,4 +1,4 @@
-# Data card — market-paths
+# Data card, market-paths
 
 ## Description
 
@@ -31,7 +31,7 @@ Generator: `fintwinos.datasets.synthetic.gen_market_paths(n_instruments, n_steps
 
 Fully synthetic and deterministic per seed (`numpy.random.default_rng(seed)`).
 Parameters per instrument are drawn once, then paths are simulated with a vectorised
-variance recursion. Jump indicators are ground truth held in labels only — payloads
+variance recursion. Jump indicators are ground truth held in labels only, payloads
 expose just the observable bar (close, log return), as a market feed would.
 
 ## Licence and pass-through terms
@@ -47,7 +47,7 @@ detection experiments, and time-series store ingestion exercises.
 ## Limitations
 
 - Single daily frequency; no intraday microstructure, spreads or volume.
-- Instruments are mutually independent — no cross-sectional correlation matrix or
+- Instruments are mutually independent, no cross-sectional correlation matrix or
   common factors.
 - GARCH(1,1) plus compound-Poisson jumps is a simplification; no leverage effect,
   term structure or regime switching.

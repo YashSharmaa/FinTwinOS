@@ -3,7 +3,7 @@
 FinTwinOS is **offline-first**: every deployment mode below works with zero
 secrets and zero network egress (`FINTWIN_OFFLINE=1`), running deterministic
 LLM stubs and rule-based agent fallbacks. Adding an `OPENAI_API_KEY` and
-setting `FINTWIN_OFFLINE=0` upgrades the same deployment to live LLM calls —
+setting `FINTWIN_OFFLINE=0` upgrades the same deployment to live LLM calls,
 nothing else changes.
 
 The unit of deployment is the **typed tools server**
@@ -51,7 +51,7 @@ docker run --rm -p 8341:8341 \
 
 `infra/docker-compose.yml` runs the `tools-server` service with a named
 volume for `/data` and reads an optional `.env` from the repo root (the file
-is not required — the stack is fully functional without it).
+is not required, the stack is fully functional without it).
 
 ```bash
 cd infra

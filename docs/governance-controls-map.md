@@ -25,7 +25,7 @@ its supervisors.
 | Effective challenge | Independent review of model logic, prompt/tool design, simulator assumptions | SR 11-7 | Critic/red-team swarm in the agent layer (`fintwinos/agents/`); `PolicyGate.check_decision` forcing review of executing decisions (`fintwinos/policy/gates.py`); the four headline experiments in [evaluation](evaluation.md) |
 | Validation | Validate inputs, processes, outputs, documentation, outcomes, monitoring | SR 11-7 | JSON Schema validation on every tool call (Draft 2020-12, `fintwinos/tools/registry.py`); `fintwinos eval` suites and release gates (`fintwinos/evals/`); calibration diagnostics on every simulator ([calibration runbook](runbooks/calibration.md)) |
 | Human oversight | Humans can monitor, interpret, override, halt high-risk decisions | EU AI Act, BoE/FCA | `ApprovalToken` required on every execute call; `awaiting_human` status from `handle_case` (`fintwinos/agents/runtime.py`); kill switch `FINTWIN_EXECUTE_TOOLS_ENABLED=0`; default policy pack flags high-risk proposals for review |
-| Data governance | Lineage, retention, PII minimisation, access segregation, dataset cards | BoE/FCA, NIST AI RMF | `Provenance` on every envelope and tool result (`fintwinos/core/types.py`); `provenance_required` governance field; data cards in `fintwinos/datasets/`; offline mode keeps data in-perimeter |
+| Data governance | Lineage, retention, PII minimisation, access segregation, dataset cards | BoE/FCA, NIST AI RMF | `Provenance` on every envelope and tool result (`fintwinos/core/types.py`); `provenance_required` governance field; data cards in `datasets/cards/` (registered in `fintwinos/datasets/registry.py`); offline mode keeps data in-perimeter |
 | Twin security | Threat-model ingestion, sync, simulation, write-back channels | NIST IR 8356 | The full [threat model](threat-model.md) (T1–T9), with mitigations mapped to code |
 | Third-party risk | Separate control plane from model providers; replaceable adapters; concentration monitoring | BoE/FCA, FSB, DORA | Single provider adapter in `fintwinos/models/llm_routing/client.py`; configuration-driven routing (`fintwinos/models/llm_routing/router.py`); total provider independence via `FINTWIN_OFFLINE=1`; per-call cost/usage metering |
 | Resilience testing | Failover, incident, replay, recovery, penetration-style exercises | DORA | Replay engine for episode re-execution (`ReplayEngine`, `fintwinos/core/interfaces.py`); [incident-response runbook](runbooks/incident-response.md) with kill-switch and rollback drills; offline mode as the degraded-mode rehearsal |
@@ -49,9 +49,11 @@ staged deployment rule below. The GenAI Profile's confabulation and
 information-integrity risks are addressed by schema-validated tool calls,
 hallucinated-tool-rate tracking and provenance requirements.
 
-**NIST IR 8356.** The twin-specific channels it highlights — ingestion,
-synchronisation, simulation, write-back — are each a numbered threat (T1, T5, T6,
-and the outbox-isolated execute band) in the [threat model](threat-model.md).
+**NIST IR 8356.** The twin-specific channels it highlights, ingestion,
+synchronisation, simulation, write-back, are addressed across the
+[threat model](threat-model.md): ingestion is T1, simulation is T6, and write-back
+is the outbox-isolated execute band (boundary B4). Synchronisation integrity rests
+on envelope provenance and `content_hash()` on every event (the T1 mitigations).
 
 **DORA.** ICT incident handling, resilience testing and third-party concentration
 are covered by the incident runbook, replay-based exercises, and the replaceable,
@@ -79,7 +81,7 @@ This rule is operationalised as the following checklist, applied **per workflow*
 (not per deployment). The staged rollout mechanics are in the
 [deployment runbook](runbooks/deployment.md).
 
-### Stage 1 — Replay
+### Stage 1, Replay
 
 - [ ] Workflow runs end-to-end against recorded episodes via the replay engine
       (`runtime.replay`), fully offline (`FINTWIN_OFFLINE=1`).
@@ -90,7 +92,7 @@ This rule is operationalised as the following checklist, applied **per workflow*
 - [ ] Simulator calibration diagnostics within tolerance
       ([calibration runbook](runbooks/calibration.md)).
 
-### Stage 2 — Shadow
+### Stage 2, Shadow
 
 - [ ] `FINTWIN_ENVIRONMENT=shadow`, `FINTWIN_SHADOW_MODE=1`,
       `FINTWIN_EXECUTE_TOOLS_ENABLED=0`.
@@ -101,7 +103,7 @@ This rule is operationalised as the following checklist, applied **per workflow*
 - [ ] Divergence between shadow decisions and incumbent decisions reviewed and
       dispositioned by the workflow owner.
 
-### Stage 3 — Human review
+### Stage 3, Human review
 
 - [ ] Named approvers and dual-control pairs assigned;
       `FINTWIN_DUAL_CONTROL_REQUIRED=1`.
@@ -112,7 +114,7 @@ This rule is operationalised as the following checklist, applied **per workflow*
 - [ ] Escalation path and kill-switch authority documented and rehearsed
       ([incident-response runbook](runbooks/incident-response.md)).
 
-### Stage 4 — Control testing
+### Stage 4, Control testing
 
 - [ ] Kill switch drill: flipping `FINTWIN_EXECUTE_TOOLS_ENABLED=0` (and the
       in-process deny-all rule) verifiably blocks execute calls; audited.
@@ -137,4 +139,4 @@ not recollection.
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

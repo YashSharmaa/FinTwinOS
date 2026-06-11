@@ -1,15 +1,15 @@
 # Calibration runbook
 
 Simulators are never treated as faithful worlds. Every FinTwinOS simulator must
-expose confidence intervals and calibration diagnostics — never bare point
-estimates — and this runbook describes how those diagnostics are computed, when a
+expose confidence intervals and calibration diagnostics, never bare point
+estimates, and this runbook describes how those diagnostics are computed, when a
 simulator must be recalibrated, and how a recalibration is executed and signed off.
 
 Audience: the model owners of `fintwinos/twin_sim/` simulators and the validation
 function that challenges them. Companions: the
 [simulators model card](../model-cards/simulators.md) (assumptions and
 limitations), the [evaluation page](../evaluation.md) (gates that depend on
-calibration), and [threat T6](../threat-model.md#t6--simulator-gaming) (why
+calibration), and [threat T6](../threat-model.md#t6-simulator-gaming) (why
 calibration is also a security control).
 
 ## The contract
@@ -24,9 +24,11 @@ Defined by the `Simulator` protocol (`fintwinos/core/interfaces.py`) and
 - All randomness flows through `numpy.random.default_rng(seed)`: the same scenario
   and seed reproduce the same result bit-for-bit, so every piece of simulation
   evidence in the audit trail can be regenerated.
-- Diagnostics outside tolerance raise `CalibrationError`
-  (`fintwinos/core/errors.py`), which removes the simulator from decision support
-  until recalibrated.
+- Diagnostics outside tolerance are the signal to pull a simulator from decision
+  support until recalibrated. `simulator.run()` reports the diagnostics in the
+  result's `calibration` block but does not raise on a breach; the
+  `CalibrationError` type (`fintwinos/core/errors.py`) exists for deployments to
+  wire that enforcement in, and the procedure below is operator-driven.
 
 ## The two core diagnostics
 
@@ -41,15 +43,15 @@ the realised distribution from historical replay episodes:
 
 `D = sup_x | F_sim(x) − F_real(x) |`
 
-computed over the pooled sample grid of the two empirical CDFs. Interpretation
-guide used by the shipped tolerances:
+computed over the pooled sample grid of the two empirical CDFs. Recommended
+interpretation guidance (operator-driven; not enforced automatically in code):
 
 | KS distance `D` | Reading | Action |
 |---|---|---|
 | `D < 0.05` | Excellent agreement | None |
 | `0.05 ≤ D < 0.10` | Acceptable | Monitor; note in next review |
 | `0.10 ≤ D < 0.20` | Degraded | Recalibrate before next decision-support use |
-| `D ≥ 0.20` | Failed | `CalibrationError`; pull from decision support immediately |
+| `D ≥ 0.20` | Failed | Operator action: pull from decision support immediately and recalibrate |
 
 Tolerances are per-simulator and per-target; the table above is the default
 posture, and the simulator's model owner may only tighten it, not loosen it,
@@ -68,32 +70,35 @@ inside the simulator's stated intervals over the evaluation window:
 |---|---|---|
 | 85% – 95% | Honest | None |
 | 80% – 85% or 95% – 98% | Mildly off (over/under-confident) | Recalibrate interval widths |
-| < 80% | **Overconfident — worst failure mode** | `CalibrationError`; pull immediately |
+| < 80% | **Overconfident, worst failure mode** | Operator pulls from decision support immediately |
 | > 98% | Uselessly wide | Recalibrate; intervals carry no information |
 
-Overconfidence is treated as the critical failure because downstream consumers —
-human approvers and the policy gate alike — weight simulation evidence by its
+Overconfidence is treated as the critical failure because downstream consumers,
+human approvers and the policy gate alike, weight simulation evidence by its
 stated uncertainty.
 
-Both diagnostics, with their window and target definitions, are returned by
-`simulator.calibration_report()` and stamped into the `calibration` block of every
-`SimulationResult` so that any decision's simulation evidence carries the health
-of the instrument that produced it.
+The KS diagnostic (`ks_stat`, with `calibrated` / `method` and reference metadata
+such as `reference_size` / `sample_size`) is stamped into the `calibration` block of
+every `SimulationResult` and surfaced by `simulator.calibration_report()`, so any
+decision's simulation evidence carries the distributional-fidelity health of the
+instrument that produced it. Interval coverage is computed by the standalone
+`coverage_check` helper (`fintwinos/twin_sim/calibration.py`) during recalibration
+sign-off, rather than embedded in each per-result `calibration` block.
 
 ## When to recalibrate
 
 Recalibration is triggered by any of:
 
-1. **Drift breach** — any diagnostic crossing its tolerance in scheduled
+1. **Drift breach**, any diagnostic crossing its tolerance in scheduled
    monitoring (run at least weekly in shadow and production; daily for market
    simulators).
-2. **Assumption change** — any edit to simulator parameters or structure. This
+2. **Assumption change**, any edit to simulator parameters or structure. This
    *is* a recalibration, and it bumps `assumptions_version` by definition.
-3. **Regime events** — a market, liquidity, fraud-pattern or operational regime
+3. **Regime events**, a market, liquidity, fraud-pattern or operational regime
    shift in the real data, even if diagnostics have not yet breached (they lag).
-4. **Cadence** — a hard ceiling per simulator class even if nothing triggered:
+4. **Cadence**, a hard ceiling per simulator class even if nothing triggered:
    quarterly at minimum, monthly for market and liquidity simulators.
-5. **Upstream data change** — a new connector, a changed source schema, or a
+5. **Upstream data change**, a new connector, a changed source schema, or a
    repaired poisoning incident touching the simulator's calibration targets.
 
 ## Recalibration procedure
@@ -104,11 +109,11 @@ Recalibration is triggered by any of:
 2. **Assemble the calibration corpus.** Pull the relevant replay episodes
    (`runtime.replay.episodes()`) and realised series from the
    `TimeSeriesStore`. The corpus must cover the regime the simulator will be used
-   in — fitting calm-period data and deploying into stress is the canonical
+   in, fitting calm-period data and deploying into stress is the canonical
    failure (see [offline domain randomisation](../research-basis.md#simulation-and-sim-to-real)
    in the research basis).
 3. **Refit.** Fit simulator parameter distributions to the offline corpus (not
-   hand-tuned point values — fit the *distributions*, per the offline
+   hand-tuned point values, fit the *distributions*, per the offline
    domain-randomisation approach). All fitting code is numpy against fixed seeds;
    record the seed set.
 4. **Re-diagnose out-of-sample.** Compute KS and coverage on a held-out slice of
@@ -144,16 +149,16 @@ for name, sim in runtime.simulators.items():
     assert result.calibration, f"{name}: missing calibration block"
     repeat = sim.run(Scenario(name="calibration-check", kind="stress"), seed=7)
     assert result.metrics == repeat.metrics, f"{name}: not deterministic under fixed seed"
-    print(name, "ok —", sim.calibration_report())
+    print(name, "ok,", sim.calibration_report())
 ```
 
-Any assertion failure here is a contract violation, not a tuning issue — report
+Any assertion failure here is a contract violation, not a tuning issue, report
 it as a bug on the issue tracker.
 
 ## Anti-gaming notes
 
 Calibration is also a control against simulator gaming
-([threat T6](../threat-model.md#t6--simulator-gaming)): seeds and
+([threat T6](../threat-model.md#t6-simulator-gaming)): seeds and
 `assumptions_version` are recorded on every result, so seed-shopping and silent
 assumption edits are visible in the audit chain; out-of-sample diagnostics prevent
 fitting the test; and shadow-mode comparison against reality remains the final
@@ -161,4 +166,4 @@ arbiter above any simulator, however well it scores its own diagnostics.
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

@@ -1,4 +1,4 @@
-# Data card — fraud-rings
+# Data card, fraud-rings
 
 ## Description
 

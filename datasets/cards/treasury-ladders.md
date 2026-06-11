@@ -1,12 +1,12 @@
-# Data card — treasury-ladders
+# Data card, treasury-ladders
 
 ## Description
 
 Daily treasury cash-flow ladders per currency. Each currency book starts from an
 opening balance (40–160m) and accrues daily contractual inflows and outflows
-(lognormal around per-book base levels), with occasional lumpy events — debt
+(lognormal around per-book base levels), with occasional lumpy events, debt
 maturities or collateral calls (8% of days, +10–30m outflow) and large asset
-maturities (6% of days, +8–20m inflow) — that stress the cumulative position.
+maturities (6% of days, +8–20m inflow), that stress the cumulative position.
 
 Generator: `fintwinos.datasets.synthetic.gen_treasury_ladder(currencies, days, seed)`.
 

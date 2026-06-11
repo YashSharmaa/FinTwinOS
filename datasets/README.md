@@ -30,7 +30,7 @@ for entry in list_datasets():
 
 ## Fixtures
 
-- `fixtures/elliptic2_sample/` — a fully synthetic 14-node fixture mirroring the
+- `fixtures/elliptic2_sample/`, a fully synthetic 14-node fixture mirroring the
   Elliptic2 CSV layout so the loader is testable offline. Contains no Elliptic2 data.
 
 ## The privileged-data rule
@@ -39,10 +39,10 @@ for entry in list_datasets():
 committed to this repository.** That includes:
 
 - real customer, account, transaction or case data of any kind;
-- cached external corpora (e.g. the EDGAR connector cache) — keep these under your
+- cached external corpora (e.g. the EDGAR connector cache), keep these under your
   deployment's `settings.data_dir` (default `.fintwinos/`), which is local working
   storage;
-- datasets with their own licences (e.g. Elliptic2) — download them from the
+- datasets with their own licences (e.g. Elliptic2), download them from the
   official source, keep them outside the repo, and honour their terms.
 
 Only two kinds of data belong in the repository: markdown documentation (these

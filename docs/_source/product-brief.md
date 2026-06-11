@@ -12,8 +12,8 @@ or model acts, the organisation can ask the twin what is likely to happen, what 
 go wrong, which policies apply, and which human approvals are mandatory.**
 
 Posture: aggressive on simulation and evaluation, conservative on autonomy. RL
-optimises bounded control decisions first — queue routing, simulation budgets, hedging
-candidate selection, escalation thresholds, staffing, scenario prioritisation — before
+optimises bounded control decisions first, queue routing, simulation budgets, hedging
+candidate selection, escalation thresholds, staffing, scenario prioritisation, before
 it touches any irreversible act.
 
 ## Domain value map
@@ -48,7 +48,7 @@ policy, side-effect class, idempotency, provenance requirements. Four bands:
 `observe_*`, `simulate_*`, `propose_*`, `execute_*`. Only execute may touch production,
 behind human/policy gates.
 
-Agent pattern: hierarchical-and-debating orchestration — planner decomposes, sensing
+Agent pattern: hierarchical-and-debating orchestration, planner decomposes, sensing
 swarm gathers state and checks freshness, domain swarms work in parallel, critic/red-team
 attacks the draft, execution swarm assembles a bounded plan.
 
@@ -56,7 +56,7 @@ RL: supervised/rule baseline first, offline RL second, shadow third, then narrow
 adaptation. Rewards combine business payoff with hard risk and compliance constraints
 (e.g. Expected Shortfall penalties, recall floors, fairness guardrails).
 
-Sim-to-real: simulators are never treated as faithful worlds — continuous calibration
+Sim-to-real: simulators are never treated as faithful worlds, continuous calibration
 via historical replay, offline data fitting, explicit uncertainty. Every simulator
 exposes confidence intervals and calibration diagnostics, not point estimates.
 
@@ -158,4 +158,4 @@ shadow mode, human review and control testing at the workflow level.**
 
 ---
 
-*FinTwinOS — created by Yash Sharma (https://www.linkedin.com/in/yashsharmaa/) — MIT License.*
+*FinTwinOS, created by Yash Sharma (https://www.linkedin.com/in/yashsharmaa/), MIT License.*

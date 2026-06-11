@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="FinTwinOS logo">
-  <!-- FinTwinOS logo — the institution (solid line) and its digital twin (mirrored, translucent)
+  <!-- FinTwinOS logo, the institution (solid line) and its digital twin (mirrored, translucent)
        separated by the simulation boundary. © 2026 Yash Sharma, MIT License. -->
   <defs>
     <linearGradient id="ftBg" x1="0%" y1="0%" x2="100%" y2="100%">

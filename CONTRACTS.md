@@ -1,6 +1,6 @@
 # FinTwinOS module contracts
 
-Every module codes against `fintwinos/core/` — never against another module's internals.
+Every module codes against `fintwinos/core/`, never against another module's internals.
 Read `fintwinos/core/types.py`, `fintwinos/core/interfaces.py`, `fintwinos/tools/registry.py`,
 `fintwinos/policy/gates.py`, `fintwinos/models/llm_routing/` and `fintwinos/agents/base.py`
 before writing any module code.
@@ -31,7 +31,7 @@ before writing any module code.
    connector tests are marked `@pytest.mark.network` and skipped by default.
 3. **Determinism.** All randomness goes through `numpy.random.default_rng(seed)`.
    Simulators accept `seed` and return reproducible `SimulationResult`s with
-   `confidence` intervals and a `calibration` block — never bare point estimates.
+   `confidence` intervals and a `calibration` block, never bare point estimates.
 4. **Audit.** Anything consequential appends to the shared `AuditTrail`
    (`runtime.audit` / `registry.audit`). Never bypass the registry to mutate state in
    production code paths.
@@ -41,10 +41,10 @@ before writing any module code.
    Shared foundation files (`fintwinos/core/*`, `fintwinos/tools/{__init__,registry,envelope}.py`,
    `fintwinos/policy/{__init__,gates}.py`, `fintwinos/models/llm_routing/{client,router}.py`,
    `fintwinos/agents/{__init__,base}.py`, `fintwinos/cli.py`, `pyproject.toml`, `README.md`)
-   are owned by the orchestrator — extend them via new modules, do not edit them.
+   are owned by the orchestrator, extend them via new modules, do not edit them.
 7. **Dependencies.** Use only the deps already in `pyproject.toml` (numpy, pandas,
    networkx, httpx, pydantic, jsonschema, pyyaml, typer, rich, openai; fastapi/uvicorn
-   under the `server` extra). No torch, no sklearn, no statsmodels — implement the maths
+   under the `server` extra). No torch, no sklearn, no statsmodels, implement the maths
    in numpy. If a dependency is genuinely unavoidable, report it instead of adding it.
 8. **Attribution.** FinTwinOS is MIT-licensed, created by Yash Sharma
    (https://www.linkedin.com/in/yashsharmaa/). Keep the credit line in README, docs

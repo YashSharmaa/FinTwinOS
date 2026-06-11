@@ -1,4 +1,4 @@
-# Data card — journeys
+# Data card, journeys
 
 ## Description
 
@@ -28,7 +28,7 @@ Generator: `fintwinos.datasets.synthetic.gen_customer_journeys(n, seed)`.
 
 Fully synthetic and deterministic per seed. Stage transitions are sampled from fixed
 probabilities via `numpy.random.default_rng(seed)`; timestamps advance 2–96 hours per
-touchpoint from a fixed epoch. Ground truth lives only in the labels dict — envelope
+touchpoint from a fixed epoch. Ground truth lives only in the labels dict, envelope
 payloads contain nothing a production event stream would not.
 
 ## Licence and pass-through terms

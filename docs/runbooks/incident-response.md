@@ -3,7 +3,7 @@
 What to do when FinTwinOS misbehaves or is attacked: stopping the system (kill
 switch), emergency authority (break-glass with countersign), recovering (rollback),
 and proving what happened (forensics from the audit chain). Written to satisfy the
-incident-handling expectations of DORA and NIST IR 8356 — see the
+incident-handling expectations of DORA and NIST IR 8356, see the
 [governance controls map](../governance-controls-map.md) for the mapping and the
 [threat model](../threat-model.md) for the attack scenarios these procedures answer.
 
@@ -32,7 +32,7 @@ is `0`, `ToolRegistry._gate_execute` refuses every non-dry-run execute call befo
 any policy rule or approval token is even consulted, and audits the refusal as
 `tool.execute_disabled` (`fintwinos/tools/registry.py`).
 
-**Two-step engagement — do both:**
+**Two-step engagement, do both:**
 
 1. **In-process, immediate (no restart).** Settings are `lru_cache`d per process,
    so flipping the environment variable alone does not affect a running process.
@@ -69,7 +69,7 @@ than the whole band.
 
 ## Break-glass with countersign
 
-Break-glass is the controlled *widening* of authority during an incident — e.g.
+Break-glass is the controlled *widening* of authority during an incident, e.g.
 allowing an `execute_*` remediation tool that normal policy would route through a
 slower approval chain. It is the inverse of the kill switch and is deliberately
 harder to do than to undo.
@@ -78,10 +78,10 @@ Requirements (all four, no exceptions):
 
 1. **Dual control.** `FINTWIN_DUAL_CONTROL_REQUIRED=1` stays on. The acting
    operator's `ApprovalToken` must be countersigned by a second, independent
-   approver — two tokens for the same `subject`, different `granted_by`, both
+   approver, two tokens for the same `subject`, different `granted_by`, both
    `approved`. One credential is never enough
    (`ApprovalToken`, `fintwinos/core/types.py`).
-2. **Tight scope.** Tokens name the exact tool as `subject` — the `"*"` wildcard
+2. **Tight scope.** Tokens name the exact tool as `subject`, the `"*"` wildcard
    subject is prohibited in break-glass. The enabling policy rule is an `allow`
    scoped to the specific tool pattern, prepended, and named
    `breakglass-<ticket>-<tool>` so it is unmistakable in the audit trail.
@@ -108,9 +108,9 @@ implicated.
    workflows re-enter the [staged rollout](deployment.md#staged-rollout) at replay.
 3. **Never roll back the audit trail.** The chain is append-only history; the
    rollback itself must appear in it. If the audit file was affected by the
-   incident, start a new chain file and preserve the old one as evidence — do not
+   incident, start a new chain file and preserve the old one as evidence, do not
    edit it.
-4. Twin state: prefer **reconstruction over restoration** — replay the recorded
+4. Twin state: prefer **reconstruction over restoration**, replay the recorded
    episodes (`runtime.replay`) from the last known-good point, excluding any
    envelopes identified as poisoned (see forensics below). This yields a state
    whose lineage is itself auditable.
@@ -123,11 +123,11 @@ The audit trail (`fintwinos/core/audit.py`) is the system of evidence: every too
 call, policy verdict, simulation branch, approval use and failure class is a
 hash-chained record with actor, action, payload and timestamp.
 
-**Step 1 — Preserve.** Copy the JSONL file at `FINTWIN_AUDIT_PATH` to evidence
+**Step 1, Preserve.** Copy the JSONL file at `FINTWIN_AUDIT_PATH` to evidence
 storage immediately; record its SHA-256. Continue operating on a new chain file if
 the original is itself suspect.
 
-**Step 2 — Verify integrity.**
+**Step 2, Verify integrity.**
 
 ```python
 from fintwinos.core.audit import AuditTrail
@@ -139,12 +139,12 @@ print("chain intact:", trail.verify())
 
 `verify()` walks every record: any edited payload breaks that record's recomputed
 hash; any deletion or reordering breaks the successor's `prev_hash` link. If it
-returns `False`, bisect to the first broken link — everything before it is still
+returns `False`, bisect to the first broken link, everything before it is still
 trustworthy evidence, and the break point itself localises the tampering window
-(see [threat T5](../threat-model.md#t5--audit-tampering)). A verification failure
+(see [threat T5](../threat-model.md#t5-audit-tampering)). A verification failure
 is automatically SEV-1.
 
-**Step 3 — Reconstruct the timeline.** Filter by actor and action:
+**Step 3, Reconstruct the timeline.** Filter by actor and action:
 
 ```python
 calls      = trail.records(action="tool.called")
@@ -160,14 +160,14 @@ actions; `policy.checked` records carry the matched rule names, so a
 misconfigured allow rule is identifiable by name; every `ToolResult.audit_ref`
 ties an agent-side result back to its exact `tool.called` record.
 
-**Step 4 — Correlate with the twin.** Use the replay engine to re-drive the
+**Step 4, Correlate with the twin.** Use the replay engine to re-drive the
 episode(s) covering the incident window and compare outcomes with and without
-suspect envelopes (ingestion-poisoning triage, [threat T1](../threat-model.md#t1--ingestion-poisoning));
+suspect envelopes (ingestion-poisoning triage, [threat T1](../threat-model.md#t1-ingestion-poisoning));
 check `EventEnvelope.content_hash()` and `Provenance` to attribute suspect facts
 to their source; pull the implicated `SimulationResult.seed` and
 `assumptions_version` to reproduce any simulation evidence exactly.
 
-**Step 5 — Report.** DORA-style incident reporting is the institution's process,
+**Step 5, Report.** DORA-style incident reporting is the institution's process,
 but the artefacts come from here: the preserved chain, the verification result,
 the timeline extract, replay comparisons and eval reports. Trace completeness is
 a platform metric precisely so this step never starts from zero.
@@ -185,4 +185,4 @@ a platform metric precisely so this step never starts from zero.
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

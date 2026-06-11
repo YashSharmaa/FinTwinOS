@@ -13,7 +13,7 @@ A clear, one-paragraph description of the bug.
 ## Reproduction
 
 Steps to reproduce, ideally as a runnable snippet. Please reproduce with
-`FINTWIN_OFFLINE=1` first — offline runs are deterministic, which makes bugs
+`FINTWIN_OFFLINE=1` first, offline runs are deterministic, which makes bugs
 far easier to confirm and bisect.
 
 ```bash
@@ -28,7 +28,7 @@ What you expected to happen.
 
 What actually happened. Include the full traceback / log output in a code
 block. If a tool call was involved, include the relevant `AuditTrail` records
-if you can — they pinpoint exactly which gate or handler misbehaved.
+if you can, they pinpoint exactly which gate or handler misbehaved.
 
 ## Environment
 
@@ -41,4 +41,4 @@ if you can — they pinpoint exactly which gate or handler misbehaved.
 ## Privileged data check
 
 - [ ] I confirm this report contains **no real customer, account, trade or
-      other privileged data** — only synthetic or public data.
+      other privileged data**, only synthetic or public data.

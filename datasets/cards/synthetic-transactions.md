@@ -1,4 +1,4 @@
-# Data card — synthetic-transactions
+# Data card, synthetic-transactions
 
 ## Description
 
@@ -6,10 +6,10 @@ Seeded synthetic retail payment transactions with money-laundering motifs embedd
 a configurable rate. A fraction `ring_fraction` of transactions belongs to laundering
 rings using three classic motifs, rotated in turn:
 
-- **fan-in** — several dedicated source accounts each send one sub-threshold payment
+- **fan-in**, several dedicated source accounts each send one sub-threshold payment
   (structuring, amounts drawn in 8,200–9,850) into a single collector account;
-- **fan-out** — one hub disperses sub-threshold payments to several mule accounts;
-- **cycle** — funds traverse a closed loop `A1 -> A2 -> ... -> A1`, each hop retaining
+- **fan-out**, one hub disperses sub-threshold payments to several mule accounts;
+- **cycle**, funds traverse a closed loop `A1 -> A2 -> ... -> A1`, each hop retaining
   97–99% of the previous amount.
 
 Generator: `fintwinos.datasets.synthetic.gen_transactions(n, ring_fraction, seed)`.

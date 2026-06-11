@@ -1,15 +1,15 @@
-# Data card — edgar-filings
+# Data card, edgar-filings
 
 ## Description
 
 Two related sources behind one registry entry:
 
-1. **Bundled sample corpus** — `fintwinos.datasets.edgar_loader.sample_filing_corpus()`
+1. **Bundled sample corpus**, `fintwinos.datasets.edgar_loader.sample_filing_corpus()`
    returns seven MD&A / risk-factor style excerpts for *fictional* financial issuers
    (a regional bank, a payments processor, a custodian, a ship financier, an asset
    manager, an electronic trading venue and a specialty insurer). Written for
    FinTwinOS so document-store demos and retrieval evals run fully offline.
-2. **Cached real filings** — `fintwinos.datasets.edgar_loader.load_cached_filings(data_dir)`
+2. **Cached real filings**, `fintwinos.datasets.edgar_loader.load_cached_filings(data_dir)`
    reads the EDGAR connector's deployment-local JSON cache and normalises each filing
    into the same shape.
 
@@ -45,7 +45,7 @@ each loaded document records its accession number and source URL in `metadata`.
 - Real EDGAR filings: US government public-domain material; no copyright restriction
   on the filings themselves, but observe the SEC's fair-access/rate-limit policies
   when fetching, identify your client per SEC guidance, and treat the cache as
-  deployment-local working data — never commit it to the repository.
+  deployment-local working data, never commit it to the repository.
 
 ## Intended use
 

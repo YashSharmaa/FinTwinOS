@@ -4,7 +4,7 @@
 |---|---|
 | **Artefact** | Task-class-to-model routing over OpenAI chat models, with cost metering and a deterministic offline stub |
 | **Modules** | `fintwinos/models/llm_routing/router.py` (`ModelRouter`), `fintwinos/models/llm_routing/client.py` (`LLMClient`) |
-| **Type** | Routing and access layer — not a trained model itself; this card covers the layer *and* the governance of the routed third-party models |
+| **Type** | Routing and access layer, not a trained model itself; this card covers the layer *and* the governance of the routed third-party models |
 | **Version** | Tracks the FinTwinOS release (`fintwinos version`) |
 | **Owner** | Platform (model tiers owned by the adopting institution's model-risk function) |
 
@@ -13,9 +13,9 @@
 - Route every agent LLM call to the cheapest model tier adequate for its task
   class: `planning` / `analysis` / `critique` → the primary tier (default
   `gpt-5`); `drafting` / `extraction` → the fast tier (default `gpt-5-mini`);
-  `classification` / `routing` / `cheap` → the cheap tier (default `gpt-5-nano`).
+  `classification` / `cheap` → the cheap tier (default `gpt-5-nano`).
 - Provide a single, replaceable provider boundary: all OpenAI access in FinTwinOS
-  flows through `LLMClient.complete()` — retries with exponential backoff, strict
+  flows through `LLMClient.complete()`, retries with exponential backoff, strict
   JSON-schema output, OpenAI function-calling tool definitions, and per-call
   token/cost metering.
 - Degrade to a **deterministic offline stub** whenever `FINTWIN_OFFLINE=1` or no
@@ -26,7 +26,7 @@
 **Out of scope / misuse:** the routing layer must not be used to bypass the tool
 registry (models receive tool *definitions*; calls still dispatch through
 `ToolRegistry.call` with full gating); routed models must not make execute-band
-decisions autonomously — every executing `Decision` requires human review by
+decisions autonomously, every executing `Decision` requires human review by
 `PolicyGate.check_decision` regardless of which model proposed it.
 
 ## Configuration and data
@@ -40,10 +40,10 @@ decisions autonomously — every executing `Decision` requires human review by
 - **Training data: none.** FinTwinOS does not train, fine-tune or store gradients
   for the routed models. The data consideration is *prompt content*: prompts may
   carry twin state to the provider, which is the exfiltration surface analysed in
-  [threat T7](../threat-model.md#t7--model-routing-exfiltration) and the reason
+  [threat T7](../threat-model.md#t7-model-routing-exfiltration) and the reason
   offline/in-perimeter deployment is first-class.
 - The price table in `router.py` (`DEFAULT_PRICE_TABLE`) is **indicative, for
-  budgeting and observability only — never for billing**; it is overridable via
+  budgeting and observability only, never for billing**; it is overridable via
   `ModelRouter(price_table=...)`.
 
 ## Metrics
@@ -51,7 +51,7 @@ decisions autonomously — every executing `Decision` requires human review by
 - Per-client lifetime metering: `LLMClient.usage_summary()` reports calls, input
   and output tokens, estimated cost (USD) and offline status.
 - Per-call audit: every agent completion appends an `llm.completed` audit record
-  with model name, offline flag, usage and cost — making the deployed model mix
+  with model name, offline flag, usage and cost, making the deployed model mix
   continuously inventoriable (SR 11-7) and anomalies observable.
 - Quality of routed models is **not** taken from vendor claims: it is measured by
   the [evaluation stack](../evaluation.md) (function-call exactness, agent-run
@@ -70,7 +70,7 @@ decisions autonomously — every executing `Decision` requires human review by
   ([incident runbook](../runbooks/incident-response.md#severity-classification))
   with offline mode as the documented fallback.
 - Third-party concentration is mitigated, not eliminated: one provider adapter is
-  the current surface (BoE/FCA and FSB concern — see the
+  the current surface (BoE/FCA and FSB concern, see the
   [controls map](../governance-controls-map.md)).
 
 ## Governance hooks
@@ -85,4 +85,4 @@ decisions autonomously — every executing `Decision` requires human review by
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

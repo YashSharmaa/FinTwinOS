@@ -8,17 +8,17 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 - `fintwinos.connectors.ingest` (`ingest_path`, `ingest_edgar`) backing the
-  `fintwinos ingest` CLI command — drive CSV/TSV, JSONL-CDC and SEC EDGAR sources
+  `fintwinos ingest` CLI command, drive CSV/TSV, JSONL-CDC and SEC EDGAR sources
   into a twin through the canonical `pump` driver.
-- `fintwinos.rl.pipeline.run_rl_pipeline` backing `fintwinos rl` — runs the bounded
+- `fintwinos.rl.pipeline.run_rl_pipeline` backing `fintwinos rl`, runs the bounded
   offline-RL log → train → OPE → shadow → gate loop across every decision
   environment and writes a consolidated JSON report.
-- `fintwinos.twin_core.replay.verify_replay` backing `fintwinos replay-verify` —
+- `fintwinos.twin_core.replay.verify_replay` backing `fintwinos replay-verify`,
   proves the determinism guarantee by replaying the demo episode into a fresh twin
   and comparing content-hashed snapshots.
 - `fintwinos.datasets.registry.load_dataset` backing `fintwinos datasets load`, plus
   an `offline_available` column in `list_datasets()`.
-- `observe_market_regime` risk tool — rolling z-score regime detection (calm/stressed
+- `observe_market_regime` risk tool, rolling z-score regime detection (calm/stressed
   with hysteresis) over a twin price series, wiring in `models.time_series.regime`.
 - Native ingestion routing for SEC EDGAR `filing.*` envelopes into the document store.
 - Document store contents are now part of twin snapshots (`take_snapshot` version 2),
@@ -35,7 +35,7 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.1.0]
 
 Initial public release: an auditable digital-twin operating system for financial
-organisations — federated twin substrate, typed observe/simulate/propose/execute
+organisations, federated twin substrate, typed observe/simulate/propose/execute
 tool catalog, multi-agent orchestration with critics and policy gates, bounded
 offline RL, calibrated simulators, governance plane (RBAC, approvals, kill switch,
 break-glass) and an offline-first evaluation stack.

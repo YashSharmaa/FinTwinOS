@@ -4,7 +4,7 @@
 |---|---|
 | **Artefact** | Graph-based suspicious-pattern scorer for AML alert prioritisation at the *subgraph* level |
 | **Modules** | `fintwinos/models/graph/` (feature extraction + scorer), scoring account-transfer subgraphs extracted from the `GraphStore` in `fintwinos/twin_core/`; exercised by the evals harness and tests |
-| **Type** | Classical graph model — numpy/networkx feature extraction with a deterministic scoring head; no deep-learning dependency |
+| **Type** | Classical graph model, numpy/networkx feature extraction with a deterministic scoring head; no deep-learning dependency |
 | **Version** | Tracks the FinTwinOS release; scoring assumptions versioned alongside simulator `assumptions_version` conventions |
 | **Owner** | Compliance domain (model risk sign-off required before any production use) |
 
@@ -14,14 +14,14 @@
   minutes on the likeliest-suspicious entity neighbourhoods first.
 - Operate at the **subgraph level**, following the framing established by the
   Elliptic2 dataset (2024): money laundering is a pattern over sets of entities
-  and flows — rings, layering chains, fan-in/fan-out motifs — not a property of a
+  and flows, rings, layering chains, fan-in/fan-out motifs, not a property of a
   single transaction.
 - Feed the compliance agent swarm: scores arrive as `Alert.score` with the
   contributing subgraph features attached for narrative drafting, and analysts see
   *why* a neighbourhood scored high (degree patterns, density, motif counts,
   flow asymmetries), not a bare number.
 
-**Out of scope / misuse — hard lines:**
+**Out of scope / misuse, hard lines:**
 
 - **No case-closure automation.** The [release gate](../evaluation.md#the-evaluation-stack)
   is explicit: no closure automation unless recall floors and policy traceability
@@ -34,7 +34,7 @@
 ## Data
 
 - **Public benchmark anchor:** Elliptic2 (2024), the large-scale AML dataset with
-  subgraph-level suspicious-pattern labels — used through the eval adapter for
+  subgraph-level suspicious-pattern labels, used through the eval adapter for
   benchmark reporting ([benchmark plan](../evaluation.md#benchmark-plan)).
 - **Bundled synthetic data:** deterministic fraud-ring generators in
   `fintwinos/datasets/` (seeded via `numpy.random.default_rng`) provide offline
@@ -53,11 +53,11 @@
 
 Reported by the compliance eval suite (`fintwinos eval`):
 
-- **Alert precision / recall**, with **recall floors as hard constraints** — a
+- **Alert precision / recall**, with **recall floors as hard constraints**, a
   recall-floor violation in replay or shadow fails the gate outright, whatever
   the precision gain (missing true laundering is the asymmetric harm).
 - **Analyst minutes saved** (queue-ordering efficiency against the incumbent
-  ordering) — a soft metric, reported but never traded against the floor.
+  ordering), a soft metric, reported but never traded against the floor.
 - **Policy citation accuracy and narrative completeness** for the downstream
   drafting the scores feed.
 - Score calibration: ranked buckets are checked against realised confirmation
@@ -78,7 +78,7 @@ reproducible from a released eval report.
 - **Adversarial adaptation:** launderers probe thresholds; a static scorer
   decays. Drift monitoring on score distributions and confirmation rates is
   mandatory, with refit cadence per the calibration triggers.
-- **Poisoning surface:** ingestion poisoning ([threat T1](../threat-model.md#t1--ingestion-poisoning))
+- **Poisoning surface:** ingestion poisoning ([threat T1](../threat-model.md#t1-ingestion-poisoning))
   can suppress or inflate neighbourhood scores; provenance checks and episode
   replay are the detection path.
 - **Fairness:** neighbourhood features can proxy for geography or segment.
@@ -104,4 +104,4 @@ reproducible from a released eval report.
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

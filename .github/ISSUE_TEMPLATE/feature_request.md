@@ -13,8 +13,8 @@ operations, engineering) and how often?
 
 ## Proposed solution
 
-Describe the capability. If it adds tools, say which band(s) they belong to —
-`observe_*`, `simulate_*`, `propose_*` or `execute_*` — and the risk tier you
+Describe the capability. If it adds tools, say which band(s) they belong to,
+`observe_*`, `simulate_*`, `propose_*` or `execute_*`, and the risk tier you
 would assign. Remember the hard rules:
 
 - observe / simulate / propose tools must be side-effect free;

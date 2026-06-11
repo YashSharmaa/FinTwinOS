@@ -23,14 +23,14 @@
 
 ---
 
-FinTwinOS keeps a live, federated digital twin of a financial institution — books,
-exposures, workflows, controls and customer journeys — and exposes it through **typed
+FinTwinOS keeps a live, federated digital twin of a financial institution, books,
+exposures, workflows, controls and customer journeys, and exposes it through **typed
 LLM function-calls**, **specialised agent swarms**, **calibrated simulators** and
 **bounded reinforcement learning**, all behind first-class governance gates.
 
 This is not another chatbot or a generic agent framework. It is an operating system for
 **simulating and steering financial decisions** across risk, trading, compliance,
-treasury and customer operations — aggressive on simulation and evaluation,
+treasury and customer operations, aggressive on simulation and evaluation,
 deliberately conservative on autonomy.
 
 ## How it works
@@ -39,14 +39,14 @@ deliberately conservative on autonomy.
   <img src="docs/assets/architecture-animation.svg" alt="Animated architecture: sources flow into the digital twin, agent swarms rehearse on simulators, proposals pass a default-deny policy gate, and everything lands on a hash-chained audit trail" width="100%"/>
 </p>
 
-1. **Observe** — connectors stream events into the twin's graph, time-series and
+1. **Observe**, connectors stream events into the twin's graph, time-series and
    document stores; every record carries provenance.
-2. **Simulate** — agent swarms rehearse the decision on calibrated simulators that
+2. **Simulate**, agent swarms rehearse the decision on calibrated simulators that
    return confidence intervals, never bare point estimates.
-3. **Propose** — the planner aggregates domain analyses, a red-team critic attacks the
+3. **Propose**, the planner aggregates domain analyses, a red-team critic attacks the
    draft, and the policy gate issues a verdict.
-4. **Execute (gated)** — the execute band is default-deny: it needs an explicit policy
-   allow-rule, a valid human approval token *and* a global enable flag — and every step
+4. **Execute (gated)**, the execute band is default-deny: it needs an explicit policy
+   allow-rule, a valid human approval token *and* a global enable flag, and every step
    lands on the tamper-evident audit chain.
 
 ## Why
@@ -56,7 +56,7 @@ deliberately conservative on autonomy.
   and hidden model risk (BoE/FCA 2024 survey; FSB 2024).
 - Finance-agent benchmarks (Finance Agent Benchmark, FinMCP-Bench, SECQUE, BlueFin,
   BFCL V4) show frontier models are still far from dependable on hard financial work.
-- The open-source gap is not in agent wrappers — it is in **financially realistic,
+- The open-source gap is not in agent wrappers, it is in **financially realistic,
   auditable, benchmarked** systems with inspectable orchestration, replaceable model
   routing and hybrid deployment.
 
@@ -65,19 +65,19 @@ deliberately conservative on autonomy.
 | Layer | Modules | What it does |
 |---|---|---|
 | 🏦 Twin substrate | `fintwinos/twin_core` | Entity resolution, graph + time-series + document stores, event ingestion, replay engine |
-| 🎛️ Simulation | `fintwinos/twin_sim` | Agent-based market sim, treasury liquidity, compliance/fraud-ring, customer-ops queues — all with confidence intervals and calibration diagnostics |
+| 🎛️ Simulation | `fintwinos/twin_sim` | Agent-based market sim, treasury liquidity, compliance/fraud-ring, customer-ops queues, all with confidence intervals and calibration diagnostics |
 | 🔧 Tool layer | `fintwinos/tools` | Typed `observe_*` / `simulate_*` / `propose_*` / `execute_*` tools with risk tier, side-effect class, approval policy and provenance; MCP-style JSON-RPC server |
 | 🤖 Agent swarms | `fintwinos/agents` | Planner, sensing, risk, compliance, treasury, customer-ops, critic/red-team agents and a durable case orchestrator |
 | 🧠 Models | `fintwinos/models` | OpenAI LLM routing with cost metering and offline stubs; graph AML scoring; time-series forecasters; tabular scorecards |
 | 📈 Learning | `fintwinos/rl` | Replay buffers, conservative offline RL, contextual bandits, off-policy evaluation, shadow-mode deployment gating |
-| 🛡️ Governance | `fintwinos/policy` | Policy gates, YAML rule packs, maker-checker approvals, dual control, break-glass, kill switch — plus a tamper-evident, hash-chained audit trail |
+| 🛡️ Governance | `fintwinos/policy` | Policy gates, YAML rule packs, maker-checker approvals, dual control, break-glass, kill switch, plus a tamper-evident, hash-chained audit trail |
 | ✅ Evaluation | `fintwinos/evals` | Function-call exactness, agent-run consistency, domain metric suites, benchmark adapters, report generation |
 | 🔌 Data | `fintwinos/connectors`, `fintwinos/datasets` | EDGAR, CSV/CDC/webhook connectors; synthetic generators for transactions, fraud rings, journeys, market paths; data cards |
-| 🎬 Demos | `fintwinos/demos`, `examples/` | Liquidity stress, AML triage, analyst research, customer ops and an end-to-end day-in-the-life — all runnable fully offline |
+| 🎬 Demos | `fintwinos/demos`, `examples/` | Liquidity stress, AML triage, analyst research, customer ops and an end-to-end day-in-the-life, all runnable fully offline |
 
 ## The five domains
 
-All five domains run on the **same substrate** — a stateful twin, not just prompts.
+All five domains run on the **same substrate**, a stateful twin, not just prompts.
 Compliance is a subgraph problem; trading and treasury need calibrated time-series and
 scenario engines; risk needs versioned models and counterfactual replay; customer
 operations needs calibrated queue and persona simulation. That is why FinTwinOS is an
@@ -91,7 +91,7 @@ operating system rather than a wrapper.
 | **Treasury** | Cash ladders, collateral, intraday liquidity, funding spreads | Simulates liquidity stress, recommends transfers, prioritises contingency actions | Better resilience and funding efficiency under stress |
 | **Customer ops** | Journey state, channels, documents, complaints, SLA queues | Routes cases, predicts escalations, drafts compliant responses, simulates policy | Lower handling time, fewer SLA breaches |
 
-## Who it's for — industries & use cases
+## Who it's for, industries & use cases
 
 | Industry | Representative use cases |
 |---|---|
@@ -104,30 +104,30 @@ operating system rather than a wrapper.
 | **Corporate treasury** | Multi-currency cash-ladder stress, funding-cost optimisation, contingency-action prioritisation |
 
 The common thread: institutions can **rehearse decisions on a calibrated twin and prove
-the control story** before anything touches a production system — exactly the
+the control story** before anything touches a production system, exactly the
 inspectable, hybrid-deployable, regulator-ready posture the 2024–2026 supervisory and
 benchmark evidence calls for.
 
 ## Seeing it work
 
-`fintwinos demo aml_triage` runs the whole stack on a seeded demo bank — offline with
+`fintwinos demo aml_triage` runs the whole stack on a seeded demo bank, offline with
 deterministic stubs, or live against OpenAI with a key. The AML subgraph scorer ranks a
 laundering ring, an LLM drafts the case narrative over real twin entities, and the
 **governance plane** does its job:
 
 ```text
 execute_close_case · attempt without approval
-  refused — execute band is disabled (FINTWIN_EXECUTE_TOOLS_ENABLED=0)
+  refused, execute band is disabled (FINTWIN_EXECUTE_TOOLS_ENABLED=0)
 
 execute_close_case · with granted ApprovalToken (dual control)
-  executed — approval apr_… granted by mlro.on.duty + deputy.mlro
+  executed, approval apr_… granted by mlro.on.duty + deputy.mlro
 
 Audit trail (tail)
   approval.requested → approval.approved → approval.approved → approval.granted
   → policy.checked → tool.called → case.closed → tool.completed   (hash-chained)
 ```
 
-Run live and the planner returns `status: awaiting_human`, `action_type: propose_only` —
+Run live and the planner returns `status: awaiting_human`, `action_type: propose_only`,
 the system proposes, it does not act. Conservative-on-autonomy by construction.
 
 ## Quickstart
@@ -135,7 +135,7 @@ the system proposes, it does not act. Conservative-on-autonomy by construction.
 ```bash
 pip install -e ".[dev,server]"
 
-# Run completely offline — no API key, no network:
+# Run completely offline, no API key, no network:
 FINTWIN_OFFLINE=1 fintwinos demo liquidity
 FINTWIN_OFFLINE=1 fintwinos demo aml_triage
 FINTWIN_OFFLINE=1 fintwinos eval all
@@ -174,7 +174,7 @@ review and control testing.**
 ## Evaluation & release gates
 
 `fintwinos eval all` runs the full evaluation stack offline and checks **8 release
-gates** — function-call exactness, tool-hallucination rate, multi-run consistency, and
+gates**, function-call exactness, tool-hallucination rate, multi-run consistency, and
 domain floors for risk, treasury, compliance and customer operations. Gates fail
 conservatively: no evidence means no promotion. See
 [`docs/evaluation.md`](docs/evaluation.md) for the gate definitions and the headline

@@ -3,9 +3,9 @@
 FinTwinOS keeps a continuously updated digital twin of a financial firm and exposes
 that twin through typed read, simulate, propose and execute functions. The posture is
 deliberate: **aggressive on simulation and evaluation, conservative on autonomy.**
-Reinforcement learning optimises bounded control decisions first — queue routing,
+Reinforcement learning optimises bounded control decisions first, queue routing,
 simulation budgets, hedging candidate selection, escalation thresholds, staffing,
-scenario prioritisation — before it touches any irreversible act.
+scenario prioritisation, before it touches any irreversible act.
 
 This page is the complete reference architecture. Every component is mapped to its
 module path in the [component map](#component-to-module-map) at the end. For the
@@ -104,15 +104,15 @@ three typed stores plus a replay engine, assembled into a single
 `TwinRuntime` dataclass (`fintwinos/core/interfaces.py`) by
 `fintwinos.twin_core.runtime.build_runtime(seed=7, with_demo_data=True)`:
 
-- **`GraphStore`** — entities and relationships: customers, accounts, instruments,
+- **`GraphStore`**, entities and relationships: customers, accounts, instruments,
   legal entities, cases, fraud rings. Backed by `networkx`; supports
   `upsert_entity`, `add_relationship`, `neighbors`, `subgraph` and `stats`.
-- **`TimeSeriesStore`** — market and operational dynamics keyed by series name:
+- **`TimeSeriesStore`**, market and operational dynamics keyed by series name:
   prices, balances, queue depths, funding spreads. Supports `append`, `window`,
   `latest`, `keys`.
-- **`DocumentStore`** — filings, internal procedures, customer artefacts and
+- **`DocumentStore`**, filings, internal procedures, customer artefacts and
   supervisory rules, with `add`, `get`, `search` and `count`.
-- **`ReplayEngine`** — records every `EventEnvelope` into episodes and replays them
+- **`ReplayEngine`**, records every `EventEnvelope` into episodes and replays them
   through a handler for counterfactual analysis (`record`, `episode`, `episodes`,
   `replay`).
 
@@ -147,8 +147,8 @@ optional `episode_id` and a `Provenance` block (source system, ingestion time,
 record hash, licence). Envelopes expose a `content_hash()` (SHA-256 over kind,
 source and payload) so downstream consumers can detect mutation in flight.
 
-- **Connectors** (`fintwinos/connectors/`) adapt enterprise and external sources —
-  SEC EDGAR, CSV drops, CDC streams, webhooks — into async `EventEnvelope` streams
+- **Connectors** (`fintwinos/connectors/`) adapt enterprise and external sources,
+  SEC EDGAR, CSV drops, CDC streams, webhooks, into async `EventEnvelope` streams
   (`Connector` protocol in `fintwinos/core/interfaces.py`).
 - **Ingestion** goes through `runtime.ingestor` (`EventIngestor` protocol); the
   ingestor updates the stores, stamps provenance, and hands the envelope to the
@@ -156,10 +156,10 @@ source and payload) so downstream consumers can detect mutation in flight.
   than silently dropping data.
 - **Episodes** group envelopes into replayable units. The replay engine is what
   makes counterfactual analysis, calibration backtests and incident forensics
-  possible — the same recorded episode can be re-driven through new policy rules,
+  possible, the same recorded episode can be re-driven through new policy rules,
   new simulators or new agent versions.
-- **Synthetic data** (`fintwinos/datasets/`) provides deterministic generators —
-  transactions, fraud rings, customer journeys, market paths — seeded via
+- **Synthetic data** (`fintwinos/datasets/`) provides deterministic generators,
+  transactions, fraud rings, customer journeys, market paths, seeded via
   `numpy.random.default_rng(seed)` so demos and tests are reproducible offline.
 
 ## 3. The function-call layer: four bands, five governance fields
@@ -188,15 +188,15 @@ Beyond a normal JSON-Schema tool description, every `ToolSpec` carries five
 governance fields, exported in the MCP-style public catalog as `x_`-prefixed
 extensions (`ToolSpec.to_public_dict()`):
 
-1. **Risk tier** (`risk_tier`: low / medium / high / critical) — drives policy
+1. **Risk tier** (`risk_tier`: low / medium / high / critical), drives policy
    matching via `min_risk_tier` rules.
-2. **Approval policy** (`requires_human_approval`) — execute tools must set it;
+2. **Approval policy** (`requires_human_approval`), execute tools must set it;
    policy rules can additionally demand review for any band.
-3. **Side-effect class** (`side_effect`: none / read / reversible / irreversible) —
+3. **Side-effect class** (`side_effect`: none / read / reversible / irreversible),
    structurally checked against the band.
-4. **Idempotency** (`idempotent`, plus `CallContext.idempotency_key`) — replays of
+4. **Idempotency** (`idempotent`, plus `CallContext.idempotency_key`), replays of
    the same keyed call return the cached `ToolResult` instead of re-running.
-5. **Provenance requirement** (`provenance_required`) — results must carry
+5. **Provenance requirement** (`provenance_required`), results must carry
    `Provenance` records; the registry attaches a twin-sourced provenance stamp if
    the handler does not.
 
@@ -204,19 +204,19 @@ extensions (`ToolSpec.to_public_dict()`):
 
 `ToolRegistry.call(name, arguments, context)` runs, in order:
 
-1. **Schema validation** — arguments are validated against the tool's JSON Schema
+1. **Schema validation**, arguments are validated against the tool's JSON Schema
    (Draft 2020-12); failures are audited as `tool.schema_rejected` and returned as
    errors, never raised into the orchestrator.
-2. **Hard execute gating** — independent of any configurable policy, an execute
+2. **Hard execute gating**, independent of any configurable policy, an execute
    call is refused unless `FINTWIN_EXECUTE_TOOLS_ENABLED=1` **and** a valid
    `ApprovalToken` is attached to the `CallContext`. Dry runs of execute tools are
    always permitted and return a `{"dry_run": true, ...}` preview without invoking
    the handler.
-3. **Policy gate** — the configurable `PolicyGate` (section 7) is consulted;
+3. **Policy gate**, the configurable `PolicyGate` (section 7) is consulted;
    verdicts are audited as `policy.checked`.
-4. **Idempotency replay** — keyed repeats return the cached result
+4. **Idempotency replay**, keyed repeats return the cached result
    (`tool.idempotent_replay`).
-5. **Invocation** — the handler runs (sync or async); the call and completion are
+5. **Invocation**, the handler runs (sync or async); the call and completion are
    audited (`tool.called`, `tool.completed`) with the audit record hash returned in
    `ToolResult.audit_ref`, and handler exceptions are captured as failed results
    (`tool.failed`), never crashes.
@@ -224,7 +224,7 @@ extensions (`ToolSpec.to_public_dict()`):
 ### The MCP-style edge
 
 `fintwinos serve-tools` serves the catalog over JSON-RPC 2.0 (`tools/list`,
-`tools/call` — envelope helpers in `fintwinos/tools/envelope.py`, FastAPI app in
+`tools/call`, envelope helpers in `fintwinos/tools/envelope.py`, FastAPI app in
 `fintwinos/tools/server.py`, installed with the `[server]` extra). External
 MCP-compatible clients see standard tool descriptions plus the five governance
 fields; the registry's gating applies identically regardless of transport.
@@ -234,23 +234,23 @@ fields; the registry's gating applies identically regardless of transport.
 The agent pattern is **hierarchical-and-debating orchestration**: a planner
 decomposes the objective, a sensing swarm gathers twin state and checks freshness,
 domain swarms work in parallel, a critic/red-team swarm attacks the draft, and an
-execution swarm assembles a bounded plan — proposals only, unless every gate passes.
+execution swarm assembles a bounded plan, proposals only, unless every gate passes.
 
 Foundations in `fintwinos/agents/base.py`:
 
-- **`BaseAgent`** — one subclass per role. Each agent declares a `task_class` so the
+- **`BaseAgent`**, one subclass per role. Each agent declares a `task_class` so the
   model router picks the right tier, and **must** work offline through deterministic
   rule-based fallbacks: `ctx.llm.offline` tells the agent it is getting stubs, and
   the LLM is an enrichment, never a hard dependency.
-- **`Blackboard`** — thread-safe shared memory for one case run, with a full posting
+- **`Blackboard`**, thread-safe shared memory for one case run, with a full posting
   history (`post`, `read`, `latest`, `topics`, `history`). Shared state flows
   through the blackboard, not hidden globals, so a run's complete intermediate state
-  is inspectable after the fact. Local agent memories stay local — this is the
+  is inspectable after the fact. Local agent memories stay local, this is the
   leakage-limiting memory design.
-- **`AgentContext`** — everything an agent may touch: the runtime, the registry, the
+- **`AgentContext`**, everything an agent may touch: the runtime, the registry, the
   LLM client, the blackboard, settings and the audit trail. `AgentContext.tool()`
   routes every observation through the registry so it is audited.
-- **`TaskSpec` / `AgentOutput`** — the typed plan-step and result units, with
+- **`TaskSpec` / `AgentOutput`**, the typed plan-step and result units, with
   explicit `depends_on` edges and per-output `confidence` and `warnings`.
 
 The durable orchestrator lives in `fintwinos/agents/runtime.py`. The canonical entry
@@ -265,7 +265,7 @@ which returns `{"status": "complete" | "awaiting_human" | "blocked", "decision":
 parked pending an `ApprovalToken`; `blocked` means a deny rule matched. The planner's
 output is a typed `Decision` (`fintwinos/core/types.py`) with
 `action_type="propose_only"` or `"execute"`, the planned tool calls, the rationale
-and the risk tier — and `PolicyGate.check_decision` forces human review on every
+and the risk tier, and `PolicyGate.check_decision` forces human review on every
 executing decision regardless of tier.
 
 Prompt-only self-orchestration is reserved for low-risk, read-only work; regulated
@@ -282,13 +282,13 @@ replayable.
   tiers to any models approved by their model-risk function.
 - **LLM client** (`fintwinos/models/llm_routing/client.py`) wraps the async OpenAI
   SDK with retries, strict JSON-schema output, token/cost metering
-  (`usage_summary()`), and — critically — a **deterministic offline stub**: with
+  (`usage_summary()`), and, critically, a **deterministic offline stub**: with
   `FINTWIN_OFFLINE=1` or no API key, every call returns a reproducible stub and
   agents fall back to their rule-based paths. Tests and demos never need network
   access. See the [LLM routing model card](model-cards/llm-routing.md).
-- **Classical models** (`fintwinos/models/`) — the graph AML scorer (see the
+- **Classical models** (`fintwinos/models/`), the graph AML scorer (see the
   [AML subgraph scorer card](model-cards/aml-subgraph-scorer.md)), time-series
-  forecasters and tabular scorecards — are implemented in numpy/networkx, versioned,
+  forecasters and tabular scorecards, are implemented in numpy/networkx, versioned,
   and registered in the model inventory like everything else.
 
 ## 6. The RL layer: staged, bounded, constraint-first
@@ -297,19 +297,19 @@ Learning lives in `fintwinos/rl/` and follows a strict staircase. No stage is
 skipped, and each stage produces the evidence required by the
 [release gates](evaluation.md#release-gates) before the next is considered:
 
-1. **Rules / supervised baselines** — deterministic policies for the bounded
+1. **Rules / supervised baselines**, deterministic policies for the bounded
    control decisions (queue routing, simulation budgets, hedging candidate
    selection, escalation thresholds, staffing, scenario prioritisation). These are
    the comparators every learned policy must beat.
-2. **Offline RL** — conservative offline learning from replay-buffer data recorded
+2. **Offline RL**, conservative offline learning from replay-buffer data recorded
    by the twin, with off-policy evaluation before anything runs live.
-3. **Shadow mode** — the learned policy runs alongside the incumbent
+3. **Shadow mode**, the learned policy runs alongside the incumbent
    (`FINTWIN_SHADOW_MODE=1`), producing decisions that are logged and compared but
    never acted on.
-4. **Narrow online adaptation** — only for bounded, reversible decisions, only
+4. **Narrow online adaptation**, only for bounded, reversible decisions, only
    after shadow evidence, and always inside the policy gate.
 
-Rewards combine business payoff with **hard** risk and compliance constraints —
+Rewards combine business payoff with **hard** risk and compliance constraints,
 Expected Shortfall penalties for risk and treasury decisions, recall floors for
 compliance, fairness guardrails for customer-facing routing. A policy that violates
 a hard constraint in replay or shadow does not ship, whatever its average reward.
@@ -323,13 +323,14 @@ enforces honesty about uncertainty:
 
 - Every run takes a `Scenario` and a `seed` and returns a `SimulationResult` with
   point `metrics`, full `series`, **`confidence` intervals for every headline
-  metric**, a `calibration` block, `warnings` and the `assumptions_version` — never
+  metric**, a `calibration` block, `warnings` and the `assumptions_version`, never
   bare point estimates.
 - Every simulator exposes `calibration_report()` with its current diagnostics.
 - Continuous calibration runs against historical replay episodes and offline data:
   Kolmogorov–Smirnov distances between simulated and realised distributions, and
   empirical coverage of the nominal confidence intervals. Out-of-tolerance
-  diagnostics raise `CalibrationError` and pull the simulator from
+  diagnostics surface in each result's calibration block, and the
+  `CalibrationError` type lets operators pull the simulator from
   decision-support use. The full procedure is in the
   [calibration runbook](runbooks/calibration.md).
 - All randomness flows through `numpy.random.default_rng(seed)`; the same scenario
@@ -340,7 +341,7 @@ enforces honesty about uncertainty:
 
 Governance is not a wrapper; it is the plane the other layers stand on.
 
-- **Policy gate** (`fintwinos/policy/gates.py`) — ordered `PolicyRule`s with three
+- **Policy gate** (`fintwinos/policy/gates.py`), ordered `PolicyRule`s with three
   effects: the first matching `deny` wins immediately; `require_approval` matches
   accumulate; `allow` marks explicit permission. The execute band is
   **default-deny**: with no explicit allow rule it is blocked even before approval
@@ -348,21 +349,21 @@ Governance is not a wrapper; it is the plane the other layers stand on.
   actions outright, flags high/critical-risk proposals for review, and requires
   review on every execute call. Rule packs are loadable from YAML
   (`fintwinos/policy/`).
-- **Approvals** (`ApprovalToken`, `fintwinos/core/types.py`) — scoped to a subject
+- **Approvals** (`ApprovalToken`, `fintwinos/core/types.py`), scoped to a subject
   (tool name or decision id), carrying grantor, role, status and expiry;
   `is_valid_for()` checks all of these. `FINTWIN_DUAL_CONTROL_REQUIRED=1` (the
   default) demands maker-checker countersigning for sensitive grants.
-- **Audit trail** (`fintwinos/core/audit.py`) — every observation, tool call,
+- **Audit trail** (`fintwinos/core/audit.py`), every observation, tool call,
   policy check, simulation branch, human approval and write-back event appends a
   hash-chained `AuditRecord`: each record's SHA-256 hash covers its canonical JSON
   body plus the previous record's hash, so any retrospective edit breaks the chain
   and `AuditTrail.verify()` detects it. Optional JSONL persistence
   (`FINTWIN_AUDIT_PATH`) supports export to WORM storage.
-- **Kill switch** — `FINTWIN_EXECUTE_TOOLS_ENABLED=0` (the default) disables the
+- **Kill switch**, `FINTWIN_EXECUTE_TOOLS_ENABLED=0` (the default) disables the
   execute band in the registry itself, beneath the policy layer; a runtime
   prepended deny-all rule covers the in-process case. See the
   [incident-response runbook](runbooks/incident-response.md).
-- **Environments** — `FINTWIN_ENVIRONMENT` is `local`, `shadow` or `production`;
+- **Environments**, `FINTWIN_ENVIRONMENT` is `local`, `shadow` or `production`;
   the deployment rule (no write-enabled production access until replay, shadow,
   human review and control testing pass) is encoded as the staged rollout in the
   [deployment runbook](runbooks/deployment.md).
@@ -371,40 +372,40 @@ Governance is not a wrapper; it is the plane the other layers stand on.
 
 | Component | Module path | Canonical entry point |
 |---|---|---|
-| Canonical entities, envelopes, results, decisions | `fintwinos/core/types.py` | — |
-| Module contracts (store/simulator/connector protocols, `TwinRuntime`) | `fintwinos/core/interfaces.py` | — |
+| Canonical entities, envelopes, results, decisions | `fintwinos/core/types.py` |, |
+| Module contracts (store/simulator/connector protocols, `TwinRuntime`) | `fintwinos/core/interfaces.py` |, |
 | Settings and environment flags | `fintwinos/core/config.py` | `get_settings()` |
 | Hash-chained audit trail | `fintwinos/core/audit.py` | `AuditTrail` |
-| Exception hierarchy | `fintwinos/core/errors.py` | — |
+| Exception hierarchy | `fintwinos/core/errors.py` |, |
 | Canonical JSON Schema export | `fintwinos/core/schema_export.py` | `fintwinos export-schemas` |
 | Twin stores, ingestion, replay, demo data | `fintwinos/twin_core/` | `build_runtime(seed=7, with_demo_data=True)` |
 | Simulators (market, liquidity, compliance ring, customer ops) | `fintwinos/twin_sim/` | `register_all(runtime)` |
 | Typed tool registry and band invariants | `fintwinos/tools/registry.py` | `ToolRegistry` |
 | Default tool catalog | `fintwinos/tools/catalog.py` | `build_default_registry(runtime, ...)` |
-| MCP-style JSON-RPC envelopes | `fintwinos/tools/envelope.py` | — |
+| MCP-style JSON-RPC envelopes | `fintwinos/tools/envelope.py` |, |
 | Tool server (FastAPI, `[server]` extra) | `fintwinos/tools/server.py` | `fintwinos serve-tools` |
 | Policy rules and gate | `fintwinos/policy/gates.py` | `PolicyGate` |
 | LLM task-class routing and cost estimation | `fintwinos/models/llm_routing/router.py` | `ModelRouter` |
 | Async OpenAI client with offline stub | `fintwinos/models/llm_routing/client.py` | `LLMClient` |
-| Classical models (AML graph scorer, forecasters, scorecards) | `fintwinos/models/` | — |
+| Classical models (AML graph scorer, forecasters, scorecards) | `fintwinos/models/` |, |
 | Agent base classes and blackboard | `fintwinos/agents/base.py` | `BaseAgent`, `Blackboard` |
 | Durable case orchestrator | `fintwinos/agents/runtime.py` | `handle_case(...)` |
-| Replay buffers, offline RL, bandits, OPE, shadow gating | `fintwinos/rl/` | — |
+| Replay buffers, offline RL, bandits, OPE, shadow gating | `fintwinos/rl/` |, |
 | Evaluation suites and reports | `fintwinos/evals/` | `run_suites(suite, report_prefix)` / `fintwinos eval` |
-| Connectors (EDGAR, CSV, CDC, webhook) | `fintwinos/connectors/` | — |
-| Synthetic dataset generators and data cards | `fintwinos/datasets/` | — |
+| Connectors (EDGAR, CSV, CDC, webhook) | `fintwinos/connectors/` |, |
+| Synthetic dataset generators and data cards | `fintwinos/datasets/` |, |
 | Packaged demos (all offline-capable) | `fintwinos/demos/` | `fintwinos demo <name>` |
 | Command-line interface | `fintwinos/cli.py` | `fintwinos` |
 
 ## Further reading
 
-- [Threat model](threat-model.md) — how each of these components is attacked and
+- [Threat model](threat-model.md), how each of these components is attacked and
   defended.
-- [Governance controls map](governance-controls-map.md) — the regulatory mapping.
-- [Evaluation & release gates](evaluation.md) — the evidence each layer must
+- [Governance controls map](governance-controls-map.md), the regulatory mapping.
+- [Evaluation & release gates](evaluation.md), the evidence each layer must
   produce before promotion.
-- [Research basis](research-basis.md) — why the architecture looks like this.
+- [Research basis](research-basis.md), why the architecture looks like this.
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

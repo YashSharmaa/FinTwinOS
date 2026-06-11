@@ -13,7 +13,7 @@ them before disclosure.
   is a vulnerability.
 - Please include: affected version/commit, a minimal reproduction, the impact as
   you understand it, and whether the issue is already known or exploited anywhere.
-  Encrypted reports are welcome — say so in a first plain email and we will
+  Encrypted reports are welcome, say so in a first plain email and we will
   arrange a key exchange.
 
 You will receive an acknowledgement within **72 hours** and a substantive
@@ -22,7 +22,7 @@ assessment within **14 days**. We practise coordinated disclosure: we ask for up
 will credit reporters in the release notes unless you prefer otherwise. There is no
 bug bounty programme.
 
-## Scope — what counts as a vulnerability here
+## Scope, what counts as a vulnerability here
 
 Anything that defeats a documented control is in scope, in particular:
 
@@ -48,7 +48,7 @@ Anything that defeats a documented control is in scope, in particular:
 
 Out of scope: vulnerabilities in dependencies (report upstream, but tell us if
 FinTwinOS's usage amplifies them), prompt-injection *content* that is correctly
-contained by the gates (that containment working is the design — see the
+contained by the gates (that containment working is the design, see the
 [threat model](docs/threat-model.md)), issues requiring an already-compromised
 host, and findings in forks or unsupported versions.
 
@@ -56,15 +56,15 @@ host, and findings in forks or unsupported versions.
 
 | Version | Supported |
 |---|---|
-| 0.1.x (latest release) | Yes — security fixes |
-| `main` (unreleased) | Yes — fixes land here first |
-| Older releases | No — please upgrade |
+| 0.1.x (latest release) | Yes, security fixes |
+| `main` (unreleased) | Yes, fixes land here first |
+| Older releases | No, please upgrade |
 
 ## Hardening guidance for deployers
 
 The deployment-relevant security posture is documented, not folkloric:
 
-- Follow the [deployment runbook](docs/runbooks/deployment.md) — especially the
+- Follow the [deployment runbook](docs/runbooks/deployment.md), especially the
   staged rollout and the environment-variable table. Leave
   `FINTWIN_EXECUTE_TOOLS_ENABLED=0` and `FINTWIN_DUAL_CONTROL_REQUIRED=1` at their
   defaults until Stage 4 sign-off.
@@ -87,4 +87,4 @@ The deployment-relevant security posture is documented, not folkloric:
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

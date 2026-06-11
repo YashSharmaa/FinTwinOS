@@ -9,7 +9,7 @@
   <g font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
 
     <rect x="1" y="1" width="938" height="498" rx="18" fill="#FFFFFF" stroke="#FED7AA" stroke-width="2"/>
-    <text x="470" y="40" text-anchor="middle" font-size="17" font-weight="600" fill="#9A3412">FinTwinOS — rehearse decisions on the twin before anything touches production</text>
+    <text x="470" y="40" text-anchor="middle" font-size="17" font-weight="600" fill="#9A3412">FinTwinOS, rehearse decisions on the twin before anything touches production</text>
 
     <!-- ===================== Sources ===================== -->
     <rect x="30" y="80" width="150" height="230" rx="12" fill="#FFF7ED" stroke="#FB923C" stroke-width="1.5"/>

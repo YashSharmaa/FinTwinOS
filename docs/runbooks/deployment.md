@@ -12,7 +12,7 @@ gates. Companion runbooks: [incident response](incident-response.md) and
 ## Deployment model
 
 FinTwinOS is **tenant-isolated hybrid**: one institution per deployment, runnable
-entirely on-premises, in a private cloud, or split — with the non-negotiable
+entirely on-premises, in a private cloud, or split, with the non-negotiable
 invariant that **the control plane (policy gate, approval flow, audit trail) never
 leaves the institution's perimeter**, whatever happens with model providers.
 
@@ -26,7 +26,7 @@ Three reference shapes:
    any in-perimeter OpenAI-compatible endpoint approved by model risk) through the
    single adapter in `fintwinos/models/llm_routing/client.py`. Prompt content is
    the data-governance review surface (see
-   [threat T7](../threat-model.md#t7--model-routing-exfiltration)).
+   [threat T7](../threat-model.md#t7-model-routing-exfiltration)).
 3. **Private cloud.** Everything in the institution's cloud tenancy; identical
    configuration surface.
 
@@ -63,7 +63,7 @@ All settings are read by `fintwinos/core/config.py` from the environment (prefix
 | `FINTWIN_SEED` | `7` | Global deterministic seed; all randomness flows through `numpy.random.default_rng(seed)` |
 | `FINTWIN_DATA_DIR` | `.fintwinos` | Working data directory; the execute outbox lives at `<data_dir>/outbox` |
 | `FINTWIN_AUDIT_PATH` | unset | JSONL persistence path for the audit chain; set it in every non-local environment |
-| `FINTWIN_ENVIRONMENT` | `local` | `local` \| `shadow` \| `production` — drives the rollout stages below |
+| `FINTWIN_ENVIRONMENT` | `local` | `local` \| `shadow` \| `production`, drives the rollout stages below |
 | `FINTWIN_EXECUTE_TOOLS_ENABLED` | `0` | Hard off-switch for the execute band; leave `0` until Stage 4 sign-off |
 | `FINTWIN_DUAL_CONTROL_REQUIRED` | `1` | Maker-checker countersigning for sensitive approval grants |
 | `FINTWIN_SHADOW_MODE` | `1` | Learned/agent decisions are logged and compared, never acted on |
@@ -80,12 +80,12 @@ All settings are read by `fintwinos/core/config.py` from the environment (prefix
 Two operational notes:
 
 - **Settings are cached per process** (`get_settings()` is `lru_cache`d). Changing
-  an environment variable requires a process restart to take effect — plan
+  an environment variable requires a process restart to take effect, plan
   restarts into any flag change, and see the
   [incident-response runbook](incident-response.md) for the in-process kill path
   that does not wait for one.
 - Model tiers must match the institution's **approved model inventory**
-  (SR 11-7 — see the [controls map](../governance-controls-map.md)); changing a
+  (SR 11-7, see the [controls map](../governance-controls-map.md)); changing a
   tier is a model change and re-enters the rollout at Stage 1 for affected
   workflows.
 
@@ -93,14 +93,14 @@ Two operational notes:
 
 Under `FINTWIN_DATA_DIR` (default `.fintwinos`):
 
-- `outbox/` — the **only** place execute-band handlers write. Nothing in this
+- `outbox/`, the **only** place execute-band handlers write. Nothing in this
   release writes to a live external system; relaying outbox artefacts downstream
   is a deliberate, human-owned step outside FinTwinOS.
-- `eval-report*` — evaluation reports from `fintwinos eval` (configurable via
+- `eval-report*`, evaluation reports from `fintwinos eval` (configurable via
   `--report`).
 - The audit JSONL lives wherever `FINTWIN_AUDIT_PATH` points; keep it on storage
   with write-once or versioned retention, and ship periodic anchor hashes
-  out-of-band (see [threat T5](../threat-model.md#t5--audit-tampering)).
+  out-of-band (see [threat T5](../threat-model.md#t5-audit-tampering)).
 
 ## Staged rollout
 
@@ -108,7 +108,7 @@ The stages implement the deployment rule per workflow. The full sign-off checkli
 lives in the [governance controls map](../governance-controls-map.md#the-deployment-rule);
 this section gives the operator's view.
 
-### Stage 0 — Local
+### Stage 0, Local
 
 ```bash
 FINTWIN_OFFLINE=1 FINTWIN_ENVIRONMENT=local fintwinos demo day_in_the_life
@@ -118,13 +118,13 @@ FINTWIN_OFFLINE=1 fintwinos eval all
 Everything deterministic, no key, no network. Use this shape for development,
 CI and supervisor walkthroughs.
 
-### Stage 1 — Replay
+### Stage 1, Replay
 
 Same configuration as local, but against recorded production episodes loaded into
 the replay engine. Run the workflow's eval suites; archive the reports. Gate:
 release gates pass and hard constraints show zero violations across the corpus.
 
-### Stage 2 — Shadow
+### Stage 2, Shadow
 
 ```bash
 FINTWIN_ENVIRONMENT=shadow
@@ -134,18 +134,18 @@ FINTWIN_AUDIT_PATH=/var/fintwinos/audit/chain.jsonl   # institution-appropriate 
 ```
 
 The workflow runs on live data in parallel with the incumbent process. Decisions
-are produced, audited and compared — never acted on. Hold the stage for at least
+are produced, audited and compared, never acted on. Hold the stage for at least
 one full business cycle of the workflow; review every divergence with the
 workflow owner.
 
-### Stage 3 — Human review
+### Stage 3, Human review
 
 No configuration change: this stage is about people. Approvers named,
 dual-control pairs assigned, drills run (granting, refusing, revoking
 `ApprovalToken`s; handling `awaiting_human` case states), effective-challenge
 review signed off, kill-switch authority documented.
 
-### Stage 4 — Control testing, then narrow production
+### Stage 4, Control testing, then narrow production
 
 Run the control tests (kill-switch drill, approval-bypass attempts, audit
 verification, default-deny confirmation) from the checklist. Only after sign-off:
@@ -157,8 +157,8 @@ FINTWIN_DUAL_CONTROL_REQUIRED=1
 ```
 
 Add explicit `allow` rules **only** for the specific `execute_*` tools the
-workflow needs — the execute band remains default-deny for everything else
-(`fintwinos/policy/gates.py`) — and keep token expiries short. Review the outbox
+workflow needs, the execute band remains default-deny for everything else
+(`fintwinos/policy/gates.py`), and keep token expiries short. Review the outbox
 before any downstream relay.
 
 ## Upgrades and rollback
@@ -185,4 +185,4 @@ before any downstream relay.
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

@@ -1,7 +1,7 @@
 # Evaluation stack and release gates
 
-FinTwinOS's posture — aggressive on simulation and evaluation, conservative on
-autonomy — only means something if evaluation is layered, continuous and tied to
+FinTwinOS's posture, aggressive on simulation and evaluation, conservative on
+autonomy, only means something if evaluation is layered, continuous and tied to
 hard release gates. This page defines the evaluation stack, the gates, the four
 headline experiments, the public benchmark plan, and how the `fintwinos eval`
 command maps onto all of it.
@@ -28,7 +28,7 @@ anything above it is trusted.
 
 ## Release gates
 
-The gates are conjunctive — all applicable gates must pass — and they bind to the
+The gates are conjunctive, all applicable gates must pass, and they bind to the
 [deployment rule](governance-controls-map.md#the-deployment-rule) (replay → shadow
 → human review → control testing). In code terms:
 
@@ -36,7 +36,7 @@ The gates are conjunctive — all applicable gates must pass — and they bind t
    registry (`fintwinos/tools/`): selection exactness and argument correctness on
    held-out task sets, schema-rejection rate (`tool.schema_rejected` audit events),
    and hallucinated-tool rate (`tool.unknown` events). Until these are stable
-   across releases, `FINTWIN_EXECUTE_TOOLS_ENABLED` stays `0` — which is also its
+   across releases, `FINTWIN_EXECUTE_TOOLS_ENABLED` stays `0`, which is also its
    default.
 2. **Agent-run gate.** `handle_case` runs are repeated with fixed seeds and
    compared for consistency of status, decision content and tool-call traces.
@@ -61,8 +61,9 @@ architecture honest. Each is runnable offline and reported by the eval runner.
 ### 1. Single agent vs swarm
 
 Same objectives, two configurations: one generalist agent with the full tool
-catalog versus the hierarchical-and-debating swarm (planner, sensing, domain,
-critic, execution). Measures task success, consistency across repeats, critic
+catalog versus the hierarchical-and-debating swarm (planner, sensing, domain and
+critic, with the execute decision enforced by the policy gate). Measures task
+success, consistency across repeats, critic
 catch rate, latency and unit cost. The swarm must *earn* its coordination
 overhead; multi-agent research (see the [research basis](research-basis.md))
 shows more agents is not automatically better.
@@ -71,7 +72,7 @@ shows more agents is not automatically better.
 
 The same workflows run under prompt-only self-orchestration versus the durable
 external orchestration graph (`fintwinos/agents/runtime.py`). A 2026 controlled
-study found prompt-only self-orchestration can win on procedural tasks — so
+study found prompt-only self-orchestration can win on procedural tasks, so
 FinTwinOS measures where that holds, and reserves prompt-only mode for low-risk,
 read-only work where it demonstrably does.
 
@@ -139,7 +140,7 @@ summary. Mapping:
   [evidence generation](governance-controls-map.md#evidence-generation)).
 - **Offline determinism.** With `FINTWIN_OFFLINE=1` every suite runs on the
   bundled demo twin (`build_runtime(seed=7, with_demo_data=True)`) and synthetic
-  datasets with fixed seeds — CI never needs a key, and two runs of the same
+  datasets with fixed seeds, CI never needs a key, and two runs of the same
   commit produce the same report.
 - **Headline experiments.** The four experiments are expressed as paired suites
   (e.g. swarm-on vs swarm-off configurations of the same cases), so their deltas
@@ -158,4 +159,4 @@ summary. Mapping:
 
 ---
 
-FinTwinOS — created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/) — MIT License.
+FinTwinOS, created by [Yash Sharma](https://www.linkedin.com/in/yashsharmaa/), MIT License.

@@ -1,4 +1,4 @@
-# Data card — elliptic2
+# Data card, elliptic2
 
 ## Description
 
@@ -28,7 +28,7 @@ Output `Elliptic2Dataset`:
 
 - `graph`: `networkx.DiGraph`, node attributes `cc_id` and `label`;
 - `node_ids`: node ids in `nodes.csv` row order;
-- `labels`: aligned `int8` array — `1` suspicious, `0` licit, `-1` unknown;
+- `labels`: aligned `int8` array, `1` suspicious, `0` licit, `-1` unknown;
 - `cc_ids`, `component_labels`, optional `features` matrix + `feature_names`;
 - `summary()` with node/edge/label counts.
 
@@ -44,7 +44,7 @@ real dataset.
 ## Licence and pass-through terms
 
 - Real dataset: released by Elliptic / MIT-IBM Watson AI Lab under its **own terms
-  for research use** — review the licence at the official release before downloading,
+  for research use**, review the licence at the official release before downloading,
   and do not redistribute the data through this repository or any FinTwinOS
   deployment artefact. Cite the release paper in published work.
 - Bundled fixture: MIT (part of FinTwinOS), fully synthetic.
@@ -65,5 +65,5 @@ dataset's research-use terms.
 - Labels cover a minority of components; most of the graph is unlabelled background.
 - The full dataset is large (tens of millions of edges); the loader materialises a
   `networkx` graph in memory, so subsample for constrained environments.
-- The fixture is illustrative only — 14 nodes prove layout compatibility, nothing
+- The fixture is illustrative only, 14 nodes prove layout compatibility, nothing
   more.
